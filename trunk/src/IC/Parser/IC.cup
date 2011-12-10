@@ -1,0 +1,318 @@
+package IC.Parser;
+
+import java_cup.runtime.*;
+import IC.AST.*;
+import IC.DataTypes;
+import java.util.List;
+import java.util.ArrayList;
+import IC.UnaryOps;
+parser code  {:
+	/** Causes the parsr to print every token it reads.
+	 * This is useful for debugging.
+	 */
+	public boolean printTokens;
+
+private Lexer lexer;
+
+public Parser(Lexer lexer) {
+	super(lexer);
+	this.lexer = lexer;
+}
+
+public int getLine() {
+	return lexer.getLineNumber();
+}
+
+public void syntax_error(Symbol s) {
+	Token tok = (Token) s;
+	System.out.println("Line " + tok.getLine()+": Syntax error; unexpected " + tok);
+}
+:}
+
+// This is just for debugging
+scan with {:
+	Token t = lexer.next_token();
+if (printTokens)
+	System.out.println(t.getLine() + ":" + t);
+return t; 
+:};
+
+
+////////////////////////////////////////////
+// Symbol list (terminals and non-terminals)
+
+terminal String ID;				
+terminal INTEGER;	
+terminal ASSIGN ;	
+terminal BOOLEAN;	
+terminal BREAK;	
+terminal CLASS;	
+terminal String CLASS_ID;	
+terminal COMMA;
+terminal CONTINUE;
+terminal DIVIDE;
+terminal DOT;	 
+terminal EQUAL;
+terminal EXTENDS;
+terminal ELSE;
+terminal FALSE;
+terminal GT;
+terminal GTE;
+terminal IF;
+terminal LAND;
+terminal LB;
+terminal LP;
+terminal LCBR;
+terminal LENGTH;	
+terminal NEW;
+terminal LNEG;
+terminal LOR;
+terminal LT;
+terminal LTE;
+terminal MINUS;
+terminal MOD;
+terminal MULTIPLY;
+terminal NEQUAL;
+terminal NULL;
+terminal PLUS;
+terminal RCBR;
+terminal RETURN;
+terminal RP;
+terminal SEMI;
+terminal STATIC;
+terminal STRING;
+terminal QUOTE;
+terminal THIS;
+terminal TRUE;
+terminal VOID;
+terminal WHILE; 	
+terminal RB;
+terminal INT;
+terminal UMINUS;
+
+terminal Empty; //this describe the empty program - it solves th S/R conflict 
+terminal NONEmpty;
+
+
+non terminal Program program;
+
+non terminal ICClass classDecl;
+non terminal List<ICClass> class_list;
+non terminal Type type;
+non terminal List<Formal> formals;
+non terminal Method method;
+non terminal Field field;			//DEBUG
+non terminal List<Field> field_list;
+non terminal ParserCtrl class_code;
+non terminal Location location;
+non terminal Expression expr;
+non terminal List<Expression> expr_list;
+non terminal Statement stmt;
+non terminal List<Statement> stmt_list;
+non terminal StatementsBlock stmt_block;
+non terminal Call call;
+non terminal StaticCall staticCall;
+non terminal VirtualCall virtualCall;
+non terminal BinaryOp binop;
+non terminal UnaryOp unop;
+non terminal Literal literal;
+non terminal List<String> multi_id;
+
+//////////////////////////
+// Precedence declarations
+precedence right Empty, NONEmpty;
+precedence right ASSIGN;
+precedence left LOR;
+precedence left LAND;
+precedence left EQUAL, NEQUAL;
+precedence left LT, LTE, GT, GTE;
+precedence left PLUS, MINUS; 
+precedence left MULTIPLY, DIVIDE, MOD;
+precedence right UMINUS, LNEG;
+precedence left LB, RB, LP, RP, DOT;
+precedence left IF, ELSE;
+
+//////////////
+// The grammar
+
+program ::= class_list:cl {:
+	RESULT = new Program(cl); 
+	:};
+
+class_list ::= class_list:list classDecl:name {:
+	list.add(name);
+	RESULT = list;
+:}
+| {:
+	RESULT = new ArrayList<ICClass>();
+:};
+
+classDecl ::= CLASS CLASS_ID:name LCBR class_code:cc RCBR {:
+		RESULT = new ICClass(nameleft, name, cc.releaseFieldList(), cc.releaseMethodList());
+:}
+| CLASS CLASS_ID:name EXTENDS CLASS_ID:parent LCBR class_code:cc RCBR {:
+		RESULT = new ICClass(nameleft, name, parent, cc.releaseFieldList(), cc.releaseMethodList());
+:};
+
+
+class_code ::= class_code:cc field_list:f {: 
+	cc.collectFields(f);
+	RESULT = cc;
+:} //vars in recursion
+| class_code:cc method:m {: 
+	cc.collectMethod(m);
+	RESULT = cc;
+:} // methods in recursion
+| {:
+	RESULT = ParserCtrl.getParserCtrl();
+:};
+
+field_list ::= type:t multi_id:list SEMI {:
+	RESULT = ParserCtrl.getParserCtrl().convertToFieldList(t, list);
+:};
+
+multi_id ::= ID:name {:
+	RESULT = new ArrayList<String>();
+	RESULT.add(name);
+:} //this is a multi var for a decleration of the form: INT a,b,c;
+| multi_id:list COMMA ID:name {:
+		list.add(name);
+:};
+
+type ::= INT:name {:
+	RESULT = new PrimitiveType(nameleft, DataTypes.INT);
+:}   //DEBUG: we dont know if we need the "name" here... we dont use it
+| BOOLEAN:name {:
+	RESULT = new PrimitiveType(nameleft, DataTypes.BOOLEAN);
+:}
+| STRING:name{:
+	RESULT = new PrimitiveType(nameleft, DataTypes.STRING);
+:}
+| VOID:name {:
+	RESULT = new PrimitiveType(nameleft, DataTypes.VOID);
+:}
+| CLASS_ID:name {:
+	RESULT = new UserType(nameleft, name);
+:}
+| type LB RB {:
+	
+:};
+
+
+method ::= type:type_name ID:m_name LP RP LCBR stmt_list:sl RCBR {: 
+	RESULT = new VirtualMethod(type_name, m_name, new ArrayList<Formal>(), sl); 
+:}//no params func
+| STATIC type:type_name ID:m_name LP RP LCBR stmt_list:sl RCBR {: 
+	RESULT = new StaticMethod(type_name, m_name, new ArrayList<Formal>(),sl); 
+:}
+| type:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {:
+	RESULT = new VirtualMethod(type_name, m_name,f,sl); 
+:}//params func
+| STATIC type:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {: 
+	RESULT = new StaticMethod(type_name, m_name, f,sl); 
+:};
+
+stmt ::= location:loc ASSIGN expr:ex SEMI {:
+	RESULT = new Assignment(loc, ex); 
+:}
+| call SEMI {::}
+| RETURN SEMI {::}
+| RETURN expr SEMI {::}
+| IF LP expr RP stmt {::}
+| IF LP expr RP stmt ELSE stmt {::}
+| WHILE LP expr RP stmt {::}
+| BREAK SEMI {::}
+| CONTINUE SEMI {::}
+| stmt_block {::}
+| type ID:name {::}
+| type ID:name ASSIGN expr SEMI {::};
+
+
+stmt_block ::= LCBR stmt_list:sl RCBR{:
+	RESULT = new StatementsBlock(slleft, sl); 
+:};
+
+
+stmt_list ::= stmt_list:ls stmt:s {:
+	ls.add(s);
+	RESULT = ls; 
+:}
+|{:	
+	RESULT = new ArrayList<Statement>();; 
+:};
+
+
+expr ::= location {::}
+	| call {::}
+	| THIS {::}
+	| NEW CLASS LP RP {::}
+	| NEW type LB expr RB {::}
+	| expr DOT LENGTH {::}
+	| binop {::}
+	| unop {::}
+	| literal {::}
+	| LP expr RP {::}
+	;
+
+
+
+	call ::= staticCall {::}
+	|virtualCall {::}
+	;
+
+	expr_list ::= expr {::}
+	| expr_list COMMA expr {::}	
+	;
+
+	staticCall ::= CLASS_ID:class_name DOT ID:method LP RP {::}
+	| CLASS_ID:class_name DOT ID:method LP expr_list RP {::}
+	;
+
+	virtualCall ::= ID:method LP RP {::}
+	| ID:method LP expr_list RP {::}
+	| expr DOT ID ID:method LP expr_list RP {::}
+	| expr DOT ID ID:method LP RP {::}
+	;
+
+
+	location ::= ID {::}
+	| expr DOT ID {::}
+	| expr LB expr RB {::}
+	;
+
+	binop ::= expr PLUS expr {::}
+	| expr MINUS expr {::}
+	| expr MULTIPLY expr {::}
+	| expr DIVIDE expr {::}
+	| expr MOD expr {::}
+	| expr LAND expr {::}
+	| expr LOR expr {::}
+	| expr LT expr {::}
+	| expr LTE expr {::}
+	| expr GT expr {::}
+	| expr GTE expr {::}
+	| expr EQUAL expr {::}
+	| expr NEQUAL expr {::}
+	;
+
+	unop ::= MINUS expr:e {: RESULT = new MathUnaryOp(UnaryOps.UMINUS,e); :} %prec UMINUS
+			| LNEG expr:e {: RESULT = new LogicalUnaryOp(UnaryOps.LNEG,e); :} %prec LNEG
+			;
+
+			literal ::= INTEGER {::}
+			| QUOTE {::}
+			| TRUE {::}
+			| FALSE {::}
+			| NULL {::}
+			;
+
+formals ::= type:t ID:name 	{: //this is param list for a method
+	Formal var = new Formal(t,name);
+	RESULT = new ArrayList<Formal>();
+	RESULT.add(var);
+:}
+| formals:vars COMMA type:t ID:name	{:
+	Formal var = new Formal(t,name);
+	vars.add(var);
+	RESULT = vars;
+:};
