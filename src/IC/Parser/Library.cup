@@ -1,0 +1,185 @@
+package IC.Parser;
+
+import java_cup.runtime.*;
+import IC.AST.*;
+import IC.DataTypes;
+import java.util.List;
+import java.util.LinkedList;
+import IC.UnaryOps;
+parser code  {:
+	/** Causes the parsr to print every token it reads.
+	 * This is useful for debugging.
+	 */
+	public boolean printTokens;
+
+private Lexer lexer;
+
+public Parser(Lexer lexer) {
+	super(lexer);
+	this.lexer = lexer;
+}
+
+public int getLine() {
+	return lexer.getLineNumber();
+}
+
+public void syntax_error(Symbol s) {
+	Token tok = (Token) s;
+	System.out.println("Line " + tok.getLine()+": Syntax error; unexpected " + tok);
+}
+:}
+
+// This is just for debugging
+scan with {:
+	Token t = lexer.next_token();
+if (printTokens)
+	System.out.println(t.getLine() + ":" + t);
+return t; 
+:};
+
+
+////////////////////////////////////////////
+// Symbol list (terminals and non-terminals)
+
+terminal String ID;				
+terminal INTEGER;	
+terminal ASSIGN ;	
+terminal BOOLEAN;	
+terminal BREAK;	
+terminal CLASS;	
+terminal String CLASS_ID;	
+terminal COMMA;
+terminal CONTINUE;
+terminal DIVIDE;
+terminal DOT;	 
+terminal EQUAL;
+terminal EXTENDS;
+terminal ELSE;
+terminal FALSE;
+terminal GT;
+terminal GTE;
+terminal IF;
+terminal LAND;
+terminal LB;
+terminal LP;
+terminal LCBR;
+terminal LENGTH;	
+terminal NEW;
+terminal LNEG;
+terminal LOR;
+terminal LT;
+terminal LTE;
+terminal MINUS;
+terminal MOD;
+terminal MULTIPLY;
+terminal NEQUAL;
+terminal NULL;
+terminal PLUS;
+terminal RCBR;
+terminal RETURN;
+terminal RP;
+terminal SEMI;
+terminal STATIC;
+terminal STRING;
+terminal QUOTE;
+terminal THIS;
+terminal TRUE;
+terminal VOID;
+terminal WHILE; 	
+terminal RB;
+terminal INT;
+terminal UMINUS;
+
+terminal Empty; //this describe the empty program - it solves th S/R conflict 
+terminal NONEmpty;
+
+
+non terminal Program program;
+
+non terminal ICClass classDecl;
+non terminal List<ICClass> class_list;
+non terminal Type type;
+non terminal List<Formal> formals;
+non terminal StaticMethod method;
+non terminal Field field;			//DEBUG
+non terminal List<Field> field_list;
+non terminal ParserCtrl class_code;
+non terminal Location location;
+non terminal Expression expr;
+non terminal List<Expression> expr_list;
+non terminal Statement stmt;
+non terminal List<Statement> stmt_list;
+non terminal StatementsBlock stmt_block;
+non terminal Call call;
+non terminal StaticCall staticCall;
+non terminal VirtualCall virtualCall;
+non terminal BinaryOp binop;
+non terminal UnaryOp unop;
+non terminal Literal literal;
+non terminal List<String> multi_id;
+
+//////////////////////////
+//Precedence declarations
+precedence right Empty, NONEmpty;
+precedence right ASSIGN;
+precedence left LOR;
+precedence left LAND;
+precedence left EQUAL, NEQUAL;
+precedence left LT, LTE, GT, GTE;
+precedence left PLUS, MINUS; 
+precedence left MULTIPLY, DIVIDE, MOD;
+precedence right UMINUS, LNEG;
+precedence left LB, RB, LP, RP, DOT;
+precedence left IF, ELSE;
+
+//////////////
+//grammar
+
+class ::= CLASS CLASS_ID:name LCB methodDeclList:dclList RCB {:
+:};
+
+
+methodDeclList ::= methodDeclList:dclList method:m {:
+	RESULT = dclList.add(m);
+	
+:}
+| {: 
+	RESULET = new ArrayList<StaticMethod>();
+:};
+
+
+method ::= STATIC type:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {: 
+	RESULT = new StaticMethod(type_name, m_name, f,sl); 
+:};
+
+
+type ::= INT:name {:
+	RESULT = new PrimitiveType(nameleft, DataTypes.INT);
+:}
+| BOOLEAN:name {:
+	RESULT = new PrimitiveType(nameleft, DataTypes.BOOLEAN);
+:}
+| STRING:name{:
+	RESULT = new PrimitiveType(nameleft, DataTypes.STRING);
+:}
+| VOID:name {:
+	RESULT = new PrimitiveType(nameleft, DataTypes.VOID);
+:}
+| CLASS_ID:name {:
+	RESULT = new UserType(nameleft, name);
+:}
+| type LB RB {:
+	
+:};
+
+
+formals ::= type:t ID:name 	{: //this is param list for a method
+	Formal var = new Formal(t,name);
+	RESULT = new ArrayList<Formal>();
+	RESULT.add(var);
+:}
+| formals:vars COMMA type:t ID:name	{:
+	Formal var = new Formal(t,name);
+	vars.add(var);
+	RESULT = vars;
+:};
