@@ -8,6 +8,7 @@ import IC.AST.Program;
 import java_cup.runtime.*;
 
 import IC.Parser.LexicalError;
+import IC.Parser.LibraryParser;
 import IC.Parser.Token;
 import IC.Parser.sym;
 import IC.Parser.Lexer;
@@ -112,7 +113,7 @@ public class Compiler
 			// Parse the input file
 			FileReader txtFile = new FileReader(args[0]);
 			Lexer scanner = new Lexer(txtFile);
-			Parser parser = new Parser(scanner);
+			LibraryParser parser = new LibraryParser(scanner);
 			parser.printTokens = printtokens;
 
 			Symbol parseSymbol = parser.parse();

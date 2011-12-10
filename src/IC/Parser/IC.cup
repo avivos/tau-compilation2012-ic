@@ -181,7 +181,7 @@ multi_id ::= ID:name {:
 
 type ::= INT:name {:
 	RESULT = new PrimitiveType(nameleft, DataTypes.INT);
-:}   //DEBUG: we dont know if we need the "name" here... we dont use it
+:}
 | BOOLEAN:name {:
 	RESULT = new PrimitiveType(nameleft, DataTypes.BOOLEAN);
 :}
@@ -194,8 +194,8 @@ type ::= INT:name {:
 | CLASS_ID:name {:
 	RESULT = new UserType(nameleft, name);
 :}
-| type LB RB {:
-	
+| type:t LB RB {:
+	RESULT.incrementDimension();
 :};
 
 
@@ -303,7 +303,10 @@ literal ::= INTEGER {::}
 | FALSE {::}
 | NULL {::};
 
-formals ::= type:t ID:name 	{: //this is param list for a method
+formals ::= {:
+	RESULT = new ArrayList<Formal>();
+:}
+| type:t ID:name 	{: //this is param list for a method
 	Formal var = new Formal(t,name);
 	RESULT = new ArrayList<Formal>();
 	RESULT.add(var);

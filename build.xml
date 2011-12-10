@@ -87,7 +87,7 @@
         <echo message="Compiling sources..."/>
         <javac srcdir="${src}"
            destdir="${classes}"
-           source="1.5"
+           source="1.6"
            debug="${debug}"
            deprecation="${deprecation}"
            optimize="${optimize}"/>

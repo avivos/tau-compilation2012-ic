@@ -34,7 +34,7 @@ public void syntax_error(Symbol s) {
 scan with {:
 	Token t = lexer.next_token();
 if (printTokens)
-	System.out.println(t.getLine() + ":" + t);
+	System.out.println(t.getLine() + "::" + t);
 return t; 
 :};
 
@@ -153,16 +153,22 @@ type ::= INT:name {:
 | CLASS_ID:name {:
 	RESULT = new UserType(nameleft, name);
 :}
-| type LB RB {:
-	
+| INT:name LB RB {:
+	RESULT = new PrimitiveType(nameleft, DataTypes.INT);
+	RESULT.incrementDimension();
 :};
 
 
-formals ::= formals:vars COMMA type:t ID:name {:
+formals ::= {:
+	RESULT = new ArrayList<Formal>();
+:}
+| type:t ID:name 	{: //this is param list for a method
+	Formal var = new Formal(t,name);
+	RESULT = new ArrayList<Formal>();
+	RESULT.add(var);
+:}
+| formals:vars COMMA type:t ID:name	{:
 	Formal var = new Formal(t,name);
 	vars.add(var);
 	RESULT = vars;
-:}
-| {:
-	RESULT = new ArrayList<Formal>();
 :};
