@@ -3,6 +3,7 @@ package IC;
 import java.io.FileReader;
 
 import IC.Parser.Parser;
+import IC.AST.ICClass;
 import IC.AST.PrettyPrinter;
 import IC.AST.Program;
 import java_cup.runtime.*;
@@ -118,12 +119,12 @@ public class Compiler
 
 			Symbol parseSymbol = parser.parse();
 			System.out.println("Parsed " + args[0] + " successfully!");
-			Program root = (Program) parseSymbol.value;
+			ICClass root = (ICClass) parseSymbol.value;
 
 			// Pretty-print the program to System.out
-			/*PrettyPrinter printer = new PrettyPrinter(root);
-			printer.print();
-
+			PrettyPrinter printer = new PrettyPrinter(args[0]);
+			System.out.print(printer.visit(root));
+			/*
 			// Interpret the program
 			SLPEvaluator evaluator = new SLPEvaluator(root);
 			evaluator.evaluate();*/
