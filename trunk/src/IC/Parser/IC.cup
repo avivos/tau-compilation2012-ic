@@ -243,68 +243,65 @@ stmt_list ::= stmt_list:ls stmt:s {:
 
 
 expr ::= location {::}
-	| call {::}
-	| THIS {::}
-	| NEW CLASS LP RP {::}
-	| NEW type LB expr RB {::}
-	| expr DOT LENGTH {::}
-	| binop {::}
-	| unop {::}
-	| literal {::}
-	| LP expr RP {::}
-	;
+| call {::}
+| THIS {::}
+| NEW CLASS LP RP {::}
+| NEW type LB expr RB {::}
+| expr DOT LENGTH {::}
+| binop {::}
+| unop {::}
+| literal {::}
+| LP expr RP {::};
 
 
 
-	call ::= staticCall {::}
-	|virtualCall {::}
-	;
+call ::= staticCall {::}
+|virtualCall {::};
 
-	expr_list ::= expr {::}
-	| expr_list COMMA expr {::}	
-	;
+expr_list ::= expr {::}
+| expr_list COMMA expr {::};
 
-	staticCall ::= CLASS_ID:class_name DOT ID:method LP RP {::}
-	| CLASS_ID:class_name DOT ID:method LP expr_list RP {::}
-	;
+staticCall ::= CLASS_ID:class_name DOT ID:method LP RP {::}
+| CLASS_ID:class_name DOT ID:method LP expr_list RP {::};
 
-	virtualCall ::= ID:method LP RP {::}
-	| ID:method LP expr_list RP {::}
-	| expr DOT ID ID:method LP expr_list RP {::}
-	| expr DOT ID ID:method LP RP {::}
-	;
+virtualCall ::= ID:method LP RP {::}
+| ID:method LP expr_list RP {::}
+| expr DOT ID ID:method LP expr_list RP {::}
+| expr DOT ID ID:method LP RP {::};
 
 
-	location ::= ID {::}
-	| expr DOT ID {::}
-	| expr LB expr RB {::}
-	;
+location ::= ID {::}
+| expr DOT ID {::}
+| expr LB expr RB {::};
 
-	binop ::= expr PLUS expr {::}
-	| expr MINUS expr {::}
-	| expr MULTIPLY expr {::}
-	| expr DIVIDE expr {::}
-	| expr MOD expr {::}
-	| expr LAND expr {::}
-	| expr LOR expr {::}
-	| expr LT expr {::}
-	| expr LTE expr {::}
-	| expr GT expr {::}
-	| expr GTE expr {::}
-	| expr EQUAL expr {::}
-	| expr NEQUAL expr {::}
-	;
+binop ::= expr PLUS expr {::}
+| expr MINUS expr {::}
+| expr MULTIPLY expr {::}
+| expr DIVIDE expr {::}
+| expr MOD expr {::}
+| expr LAND expr {::}
+| expr LOR expr {::}
+| expr LT expr {::}
+| expr LTE expr {::}
+| expr GT expr {::}
+| expr GTE expr {::}
+| expr EQUAL expr {::}
+| expr NEQUAL expr {::};
 
-	unop ::= MINUS expr:e {: RESULT = new MathUnaryOp(UnaryOps.UMINUS,e); :} %prec UMINUS
-			| LNEG expr:e {: RESULT = new LogicalUnaryOp(UnaryOps.LNEG,e); :} %prec LNEG
-			;
+	
+unop ::= MINUS expr:e {:
+	RESULT = new MathUnaryOp(UnaryOps.UMINUS,e); 
+:} %prec UMINUS
+| LNEG expr:e {:
+	RESULT = new LogicalUnaryOp(UnaryOps.LNEG,e); 
+:}%prec LNEG;
 
-			literal ::= INTEGER {::}
-			| QUOTE {::}
-			| TRUE {::}
-			| FALSE {::}
-			| NULL {::}
-			;
+
+literal ::= INTEGER {::}
+| QUOTE {::}
+| TRUE {::}
+| FALSE {::}
+| NULL {::};
 
 formals ::= type:t ID:name 	{: //this is param list for a method
 	Formal var = new Formal(t,name);

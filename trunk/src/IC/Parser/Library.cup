@@ -4,17 +4,18 @@ import java_cup.runtime.*;
 import IC.AST.*;
 import IC.DataTypes;
 import java.util.List;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import IC.UnaryOps;
+
 parser code  {:
-	/** Causes the parsr to print every token it reads.
+	/** Causes the parser to print every token it reads.
 	 * This is useful for debugging.
 	 */
 	public boolean printTokens;
 
 private Lexer lexer;
 
-public Parser(Lexer lexer) {
+public LibraryParser(Lexer lexer) {
 	super(lexer);
 	this.lexer = lexer;
 }
@@ -94,29 +95,12 @@ terminal Empty; //this describe the empty program - it solves th S/R conflict
 terminal NONEmpty;
 
 
-non terminal Program program;
 
 non terminal ICClass classDecl;
-non terminal List<ICClass> class_list;
+non terminal List<Method> methodDeclList;
 non terminal Type type;
 non terminal List<Formal> formals;
-non terminal StaticMethod method;
-non terminal Field field;			//DEBUG
-non terminal List<Field> field_list;
-non terminal ParserCtrl class_code;
-non terminal Location location;
-non terminal Expression expr;
-non terminal List<Expression> expr_list;
-non terminal Statement stmt;
-non terminal List<Statement> stmt_list;
-non terminal StatementsBlock stmt_block;
-non terminal Call call;
-non terminal StaticCall staticCall;
-non terminal VirtualCall virtualCall;
-non terminal BinaryOp binop;
-non terminal UnaryOp unop;
-non terminal Literal literal;
-non terminal List<String> multi_id;
+non terminal LibraryMethod method;
 
 //////////////////////////
 //Precedence declarations
@@ -135,21 +119,22 @@ precedence left IF, ELSE;
 //////////////
 //grammar
 
-class ::= CLASS CLASS_ID:name LCB methodDeclList:dclList RCB {:
+classDecl ::= CLASS CLASS_ID:name LCBR methodDeclList:dclList RCBR {:
+	RESULT = new ICClass(nameleft, name, new ArrayList<Field>(), dclList);
 :};
 
 
 methodDeclList ::= methodDeclList:dclList method:m {:
-	RESULT = dclList.add(m);
-	
+	RESULT = dclList;
+	RESULT.add(m);
 :}
 | {: 
-	RESULET = new ArrayList<StaticMethod>();
+	RESULT = new ArrayList<Method>();
 :};
 
 
-method ::= STATIC type:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {: 
-	RESULT = new StaticMethod(type_name, m_name, f,sl); 
+method ::= STATIC type:type_name ID:m_name LP formals:f RP SEMI {: 
+	RESULT = new LibraryMethod(type_name, m_name, f); 
 :};
 
 
@@ -173,13 +158,11 @@ type ::= INT:name {:
 :};
 
 
-formals ::= type:t ID:name 	{: //this is param list for a method
-	Formal var = new Formal(t,name);
-	RESULT = new ArrayList<Formal>();
-	RESULT.add(var);
-:}
-| formals:vars COMMA type:t ID:name	{:
+formals ::= formals:vars COMMA type:t ID:name {:
 	Formal var = new Formal(t,name);
 	vars.add(var);
 	RESULT = vars;
+:}
+| {:
+	RESULT = new ArrayList<Formal>();
 :};
