@@ -101,7 +101,7 @@ non terminal ICClass classDecl;
 non terminal List<Method> methodDeclList;
 non terminal Type type;
 non terminal List<Formal> formals;
-non terminal List<Formal> fomals_list;
+non terminal List<Formal> formals_list;
 non terminal LibraryMethod method;
 
 //////////////////////////
