@@ -33,6 +33,7 @@ public void syntax_error(Symbol s) {
 // This is just for debugging
 scan with {:
 	Token t = lexer.next_token();
+	t.left = t.getLine();
 if (printTokens)
 	System.out.println(t.getLine() + "::" + t);
 return t; 
@@ -120,7 +121,7 @@ precedence left IF, ELSE;
 //grammar
 
 classDecl ::= CLASS CLASS_ID:name LCBR methodDeclList:dclList RCBR {:
-	RESULT = new ICClass(nameleft, name, new ArrayList<Field>(), dclList);
+	RESULT = new ICClass(nameleft, (String)name, new ArrayList<Field>(), dclList);
 :};
 
 
