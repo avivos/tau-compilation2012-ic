@@ -114,12 +114,12 @@ public class Compiler
 			// Parse the input file
 			FileReader txtFile = new FileReader(args[0]);
 			Lexer scanner = new Lexer(txtFile);
-			LibraryParser parser = new LibraryParser(scanner);
+			Parser parser = new Parser(scanner);
 			parser.printTokens = printtokens;
 
 			Symbol parseSymbol = parser.parse();
 			System.out.println("Parsed " + args[0] + " successfully!");
-			ICClass root = (ICClass) parseSymbol.value;
+			Program root = (Program) parseSymbol.value;
 
 			// Pretty-print the program to System.out
 			PrettyPrinter printer = new PrettyPrinter(args[0]);

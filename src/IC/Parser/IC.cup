@@ -32,6 +32,7 @@ public void syntax_error(Symbol s) {
 // This is just for debugging
 scan with {:
 	Token t = lexer.next_token();
+	t.left = t.getLine();
 if (printTokens)
 	System.out.println(t.getLine() + ":" + t);
 return t; 
@@ -189,9 +190,6 @@ type ::= INT:name {:
 | STRING:name{:
 	RESULT = new PrimitiveType(nameleft, DataTypes.STRING);
 :}
-| VOID:name {:
-	RESULT = new PrimitiveType(nameleft, DataTypes.VOID);
-:}
 | CLASS_ID:name {:
 	RESULT = new UserType(nameleft, name);
 :}
@@ -200,19 +198,26 @@ type ::= INT:name {:
 :};
 
 
-method ::= type:type_name ID:m_name LP RP LCBR stmt_list:sl RCBR {: 
+method ::= type_or_void:type_name ID:m_name LP RP LCBR stmt_list:sl RCBR {: 
 	RESULT = new VirtualMethod(type_name, m_name, new ArrayList<Formal>(), sl); 
 :}//no params func
-| STATIC type:type_name ID:m_name LP RP LCBR stmt_list:sl RCBR {: 
+| STATIC type_or_void:type_name ID:m_name LP RP LCBR stmt_list:sl RCBR {: 
 	RESULT = new StaticMethod(type_name, m_name, new ArrayList<Formal>(),sl); 
 :}
-| type:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {:
+| type_or_void:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {:
 	RESULT = new VirtualMethod(type_name, m_name,f,sl); 
 :}//params func
-| STATIC type:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {: 
+| STATIC type_or_void:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {: 
 	RESULT = new StaticMethod(type_name, m_name, f,sl); 
 :};
 
+type_or_void:v ::= VOID {:
+	RESULT = new PrimitiveType(nameleft, DataTypes.VOID); 
+:}
+| type:t {:
+	RESULT = t;
+:}	
+	
 stmt ::= location:loc ASSIGN expr:ex SEMI {:
 	RESULT = new Assignment(loc, ex); 
 :}
