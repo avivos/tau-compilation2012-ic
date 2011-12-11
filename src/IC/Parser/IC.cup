@@ -178,7 +178,8 @@ multi_id ::= ID:name {:
 	RESULT.add(name);
 :} //this is a multi var for a decleration of the form: INT a,b,c;
 | multi_id:list COMMA ID:name {:
-		list.add(name);
+	RESULT = list;
+	RESULT.add(name);	
 :};
 
 type ::= INT:name {:
@@ -194,35 +195,34 @@ type ::= INT:name {:
 	RESULT = new UserType(nameleft, name);
 :}
 | type:t LB RB {:
+	RESULT = t;
 	RESULT.incrementDimension();
 :};
 
 
-method ::= type_or_void:type_name ID:m_name LP RP LCBR stmt_list:sl RCBR {: 
-	RESULT = new VirtualMethod(type_name, m_name, new ArrayList<Formal>(), sl); 
-:}//no params func
-| STATIC type_or_void:type_name ID:m_name LP RP LCBR stmt_list:sl RCBR {: 
-	RESULT = new StaticMethod(type_name, m_name, new ArrayList<Formal>(),sl); 
-:}
-| type_or_void:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {:
+method ::= type:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {:
 	RESULT = new VirtualMethod(type_name, m_name,f,sl); 
-:}//params func
-| STATIC type_or_void:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {: 
+:}
+| STATIC type:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {: 
 	RESULT = new StaticMethod(type_name, m_name, f,sl); 
+:}
+| VOID:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {:
+	RESULT = new VirtualMethod(new PrimitiveType(type_nameleft, DataTypes.VOID), m_name,f,sl); 
+:}
+| STATIC VOID:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {: 
+	RESULT = new StaticMethod(new PrimitiveType(type_nameleft, DataTypes.VOID), m_name, f,sl); 
 :};
 
-type_or_void:v ::= VOID {:
-	RESULT = new PrimitiveType(nameleft, DataTypes.VOID); 
-:}
-| type:t {:
-	RESULT = t;
-:}	
 	
 stmt ::= location:loc ASSIGN expr:ex SEMI {:
 	RESULT = new Assignment(loc, ex); 
 :}
-| call SEMI {::}
-| RETURN SEMI {::}
+| call SEMI {:
+	
+:}
+| RETURN SEMI {:
+	
+:}
 | RETURN expr SEMI {::}
 | IF LP expr RP stmt {::}
 | IF LP expr RP stmt ELSE stmt {::}
@@ -248,12 +248,24 @@ stmt_list ::= stmt_list:ls stmt:s {:
 :};
 
 
-expr ::= location {::}
-| call {::}
-| THIS {::}
-| NEW CLASS LP RP {::}
-| NEW type LB expr RB {::}
-| expr DOT LENGTH {::}
+expr ::= location:loc {:
+	RESULT = VariableLocation(locleft, loc);
+:}
+| call:c {:
+	RESULT = c;
+:}
+| THIS:t {:
+	RESULT = new This(tleft);
+:}
+| NEW:n CLASS:cls LP RP {:
+	RESULT = new NewClass(nleft, cls);	
+:}
+| NEW:n type:t LB expr:e RB {:
+	RESULT = new NewArray(t, e);
+:}
+| expr:earr DOT LENGTH:len {:
+	RESULT = new Length(earr);
+:}
 | binop {::}
 | unop {::}
 | literal {::}
@@ -261,14 +273,26 @@ expr ::= location {::}
 
 
 
-call ::= staticCall {::}
+call ::= staticCall:sc {:
+	RESULT = sc;
+:}
 |virtualCall {::};
 
-expr_list ::= expr {::}
-| expr_list COMMA expr {::};
+expr_list ::= expr:e {:
+	RESULT = new List<Expression>();
+	RESULT.add(e);
+:}
+| expr_list:list COMMA expr:e {:
+	RESULT = list;
+	RESULT.add(e);
+:};
 
-staticCall ::= CLASS_ID:class_name DOT ID:method LP RP {::}
-| CLASS_ID:class_name DOT ID:method LP expr_list RP {::};
+staticCall ::= CLASS_ID:class_name DOT ID:method LP RP {:
+	RESULT = new StaticCall(class_nameleft, class_name, method, new List<Expression>());
+:}
+| CLASS_ID:class_name DOT ID:method LP expr_list RP {:
+	RESULT = new StaticCall(class_nameleft, class_name, method, expr_list);
+:};
 
 virtualCall ::= ID:method LP RP {::}
 | ID:method LP expr_list RP {::}
@@ -276,8 +300,12 @@ virtualCall ::= ID:method LP RP {::}
 | expr DOT ID ID:method LP RP {::};
 
 
-location ::= ID {::}
-| expr DOT ID {::}
+location ::= ID:id {:
+	RESULT = new VariableLocation(idleft, id);
+:}
+| expr:e DOT ID:id {:
+	RESULT = new VariableLocation(eleft, )
+:}
 | expr LB expr RB {::};
 
 binop ::= expr PLUS expr {::}
@@ -317,7 +345,7 @@ formals ::= {:
 :};
 
 
-fomals_list ::= type:t ID:name 	{: //this is param list for a method
+formals_list ::= type:t ID:name 	{: //this is param list for a method
 	Formal var = new Formal(t,name);
 	RESULT = new ArrayList<Formal>();
 	RESULT.add(var);

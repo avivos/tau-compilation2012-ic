@@ -1,6 +1,6 @@
 package IC.Parser;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import IC.AST.Field;
@@ -21,37 +21,43 @@ public class ParserCtrl {
 		return singleton;
 	}
 	
-	private List<Field> fieldList = new LinkedList<Field>();
-	private List<Method> methodList = new LinkedList<Method>();
+	private List<Field> fieldList = new ArrayList<Field>();
+	private List<Method> methodList = new ArrayList<Method>();
 	
 	// these to sets of methods collect fields/methods to lists while parsing
 	// a class' code and then release the lists to create the ICClass without a lot of 
 	// Constructor-usage (we save new instance calls) 
 	
 	public void collectFields(List<Field> f){
+		if (fieldList == null) {
+			fieldList = new ArrayList<Field>();
+		}
 		fieldList.addAll(f);
 	}
 	
 	public List<Field> releaseFieldList(){
 		List<Field> retList = fieldList;
-		fieldList = new LinkedList<Field>();
+		fieldList = new ArrayList<Field>();
 		return retList;
 	}
 	
 	public void collectMethod(Method m){
+		if (methodList == null) {
+			methodList = new ArrayList<Method>();
+		}
 		methodList.add(m);
 	}
 	
 	public List<Method> releaseMethodList(){
-		List<Method> retList = new LinkedList<Method>();
-		methodList = new LinkedList<Method>();
+		List<Method> retList = methodList;
+		methodList = new ArrayList<Method>();
 		return retList;
 	}
 	
 	public List<Field> convertToFieldList(Type type, List<String> list){
-		List<Field> retList = new LinkedList<Field>();
+		List<Field> retList = new ArrayList<Field>();
 		for (String name : list) {
-			fieldList.add(new Field(type, name));
+			retList.add(new Field(type, name));
 		}
 		
 		return retList;
