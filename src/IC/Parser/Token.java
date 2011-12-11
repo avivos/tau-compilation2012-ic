@@ -17,15 +17,15 @@ public class Token extends Symbol {
     }
     
     public Token(int id,Object val, int line) {
-        super(id, null);
+        super(id, val);
         this.id = id;
         this.line = line;
         //this.value = new Return_Object(line,val);
         this.value = val; //should be replaced with elaborate object ?
     }
 
-	public String getLine() {
-		return Integer.toString(line);
+	public int getLine() {	// WE CHANGED THIS METHOD TO RETURN int
+		return line;
 	}
     
     /*

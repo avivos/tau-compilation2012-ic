@@ -100,6 +100,7 @@ non terminal ICClass classDecl;
 non terminal List<ICClass> class_list;
 non terminal Type type;
 non terminal List<Formal> formals;
+non terminal List<Formal> formals_list;
 non terminal Method method;
 non terminal Field field;			//DEBUG
 non terminal List<Field> field_list;
@@ -306,7 +307,12 @@ literal ::= INTEGER {::}
 formals ::= {:
 	RESULT = new ArrayList<Formal>();
 :}
-| type:t ID:name 	{: //this is param list for a method
+| formals_list:list {: 
+	RESULT = list; 
+:};
+
+
+fomals_list ::= type:t ID:name 	{: //this is param list for a method
 	Formal var = new Formal(t,name);
 	RESULT = new ArrayList<Formal>();
 	RESULT.add(var);
