@@ -266,8 +266,10 @@ expr ::= location:loc {:
 | expr:earr DOT LENGTH:len {:
 	RESULT = new Length(earr);
 :}
-| binop {::}
-| unop {::}
+| expr binop expr {:
+	RESULT = new 
+:}
+| unop expr {::}
 | literal {::}
 | LP expr RP {::};
 
@@ -308,19 +310,45 @@ location ::= ID:id {:
 :}
 | expr LB expr RB {::};
 
-binop ::= expr PLUS expr {::}
-| expr MINUS expr {::}
-| expr MULTIPLY expr {::}
-| expr DIVIDE expr {::}
-| expr MOD expr {::}
-| expr LAND expr {::}
-| expr LOR expr {::}
-| expr LT expr {::}
-| expr LTE expr {::}
-| expr GT expr {::}
-| expr GTE expr {::}
-| expr EQUAL expr {::}
-| expr NEQUAL expr {::};
+binop ::= PLUS:p {:
+	RESULT = new MathBinaryOp(null, BinaryOps.PLUS, null);
+:}
+| MINUS {:
+	RESULT = new MathBinaryOp(null, BinaryOps.MINUS, null);
+:}
+| MULTIPLY {:
+	RESULT = new MathBinaryOp(null, BinaryOps.MULTIPLY, null);
+:}
+| DIVIDE {:
+	RESULT = new MathBinaryOp(null, BinaryOps.DIVIDE, null);
+:}
+| MOD {:
+	RESULT = new MathBinaryOp(null, BinaryOps.MOD, null);
+:}
+| LAND {:
+	RESULT = new LogicalhBinaryOp(null, BinaryOps.LAND, null);
+:}
+| LOR {:
+	RESULT = new LogicalhBinaryOp(null, BinaryOps.LOR, null);
+:}
+| LT {:
+	RESULT = new LogicalhBinaryOp(null, BinaryOps.LT, null);
+:}
+| LTE {:
+	RESULT = new LogicalhBinaryOp(null, BinaryOps.LTE, null);
+:}
+| GT {:
+	RESULT = new LogicalhBinaryOp(null, BinaryOps.GT, null);
+:}
+| GTE {:
+	RESULT = new LogicalhBinaryOp(null, BinaryOps.GTE, null);
+:}
+| EQUAL {:
+	RESULT = new LogicalhBinaryOp(null, BinaryOps.EQUAL, null);
+:}
+| NEQUAL {:
+	RESULT = new LogicalhBinaryOp(null, BinaryOps.NEQUAL, null);
+:};
 
 	
 unop ::= MINUS expr:e {:
@@ -331,11 +359,21 @@ unop ::= MINUS expr:e {:
 :}%prec LNEG;
 
 
-literal ::= INTEGER {::}
-| QUOTE {::}
-| TRUE {::}
-| FALSE {::}
-| NULL {::};
+literal ::= INTEGER:i {:
+	RESULT = new Literal(ileft, LiteralTypes.INTEGER);
+:}
+| STRING:q {:
+	RESULT = new Literal(qleft, LiteralTypes.STRING);
+:}
+| TRUE:t {:
+	RESULT = new Literal(tleft, LiteralTypes.TRUE);
+:}
+| FALSE:f {:
+	RESULT = new Literal(fleft, LiteralTypes.FALSE);
+:}
+| NULL:n {:
+	RESULT = new Literal(nleft, LiteralTypes.NULL);
+:};
 
 formals ::= {:
 	RESULT = new ArrayList<Formal>();
