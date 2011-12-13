@@ -2,7 +2,7 @@ package IC.Parser;
 
 import java_cup.runtime.*;
 import IC.AST.*;
-import IC.DataTypes;
+import IC.*;
 import java.util.List;
 import java.util.ArrayList;
 import IC.UnaryOps;
@@ -23,9 +23,15 @@ public int getLine() {
 	return lexer.getLineNumber();
 }
 
-public void syntax_error(Symbol s) {
+public void syntax_error(Symbol s){
+	// do nothing
+}
+
+public void unrecovered_syntax_error(Symbol s) throws Exception {
+	done_parsing();
 	Token tok = (Token) s;
-	System.out.println("Line " + tok.getLine()+": Syntax error; unexpected " + tok);
+	//System.out.println("Line " + tok.getLine()+": Syntax error; unexpected " + tok.id);
+	throw new LexicalError("Syntax Error: unexpected token:" + tok.id ,tok.getLine());
 }
 :}
 
@@ -227,10 +233,10 @@ stmt ::= location:loc ASSIGN expr:ex SEMI {:
 	RESULT = new Return(rleft,e);
 :}
 | IF LP expr:e RP stmt:s {:
-	RESULT = If(e, s);
+	RESULT = new If(e, s);
 :}
 | IF LP expr:e RP stmt:s ELSE stmt:es {:
-	RESULT = If(e, s, es);
+	RESULT = new If(e, s, es);
 :}
 | WHILE LP expr:e RP stmt:s {:
 	RESULT = new While(e, s);
@@ -242,7 +248,7 @@ stmt ::= location:loc ASSIGN expr:ex SEMI {:
 	RESULT = new Continue(cleft);
 :}
 | stmt_block:sb {:
-	RESULT = new StatmentBlock(sbleft, sb);
+	RESULT = sb;
 :}
 | type:t ID:name SEMI {:
 	RESULT = new LocalVariable(t, name);
@@ -267,7 +273,7 @@ stmt_list ::= stmt_list:ls stmt:s {:
 
 
 expr ::= location:loc {:
-	RESULT = VariableLocation(locleft, loc);
+	RESULT = loc;
 :}
 | call:c {:
 	RESULT = c;
@@ -275,10 +281,10 @@ expr ::= location:loc {:
 | THIS:t {:
 	RESULT = new This(tleft);
 :}
-| NEW CLASS:cls LP RP {:
+| NEW:n CLASS_ID:cls LP RP {:
 	RESULT = new NewClass(nleft, cls);	
 :}
-| NEW type:t LB expr:e RB {:
+| NEW:n type:t LB expr:e RB {:
 	RESULT = new NewArray(t, e);
 :}
 | expr:earr DOT LENGTH:len {:
@@ -300,7 +306,7 @@ call ::= staticCall:sc {:
 :};
 
 expr_list ::= expr:e {:
-	RESULT = new List<Expression>();
+	RESULT = new ArrayList<Expression>();
 	RESULT.add(e);
 :}
 | expr_list:list COMMA expr:e {:
@@ -309,20 +315,20 @@ expr_list ::= expr:e {:
 :};
 
 staticCall ::= CLASS_ID:class_name DOT ID:method LP RP {:
-	RESULT = new StaticCall(class_nameleft, class_name, method, new List<Expression>());
+	RESULT = new StaticCall(class_nameleft, class_name, method, new ArrayList<Expression>());
 :}
-| CLASS_ID:class_name DOT ID:method LP expr_list RP {:
-	RESULT = new StaticCall(class_nameleft, class_name, method, expr_list);
+| CLASS_ID:class_name DOT ID:method LP expr_list:el RP {:
+	RESULT = new StaticCall(class_nameleft, class_name, method, el);
 :};
 
 virtualCall ::= ID:method LP RP {:
-	RESULT = new VirtualCall(methodleft, method, new List<Expression>() );
+	RESULT = new VirtualCall(methodleft, method, new ArrayList<Expression>() );
 :}
 | ID:method LP expr_list:el RP {:
 	RESULT = new VirtualCall(methodleft, method, el );
 :}
 | expr:e DOT ID:method LP RP {:
-	RESULT = new VirtualCall(methodleft, e, method,new List<Expression>() );
+	RESULT = new VirtualCall(methodleft, e, method,new ArrayList<Expression>() );
 	:}
 | expr:e DOT ID:method LP expr_list:el RP {:
 	RESULT = new VirtualCall(methodleft, e, method,el );
@@ -336,7 +342,8 @@ location ::= ID:id {:
 	RESULT = new VariableLocation(eleft, e, id);
 :}
 | expr:ar LB expr:indx RB {:
-	RESULT = new ArrayLocation(ar, indx):}; // is this saving the line number correctly ?
+	RESULT = new ArrayLocation(ar, indx);
+:}; // is this saving the line number correctly ?
 
 
 
@@ -356,28 +363,28 @@ binop ::= expr:e1 PLUS:p expr:e2 {:
 	RESULT = new MathBinaryOp(e1, BinaryOps.MOD, e2);
 :}
 | expr:e1 LAND expr:e2 {:
-	RESULT = new LogicalhBinaryOp(e1, BinaryOps.LAND, e2);
+	RESULT = new LogicalBinaryOp(e1, BinaryOps.LAND, e2);
 :}
 | expr:e1 LOR expr:e2 {:
-	RESULT = new LogicalhBinaryOp(e1, BinaryOps.LOR, e2);
+	RESULT = new LogicalBinaryOp(e1, BinaryOps.LOR, e2);
 :}
 | expr:e1 LT expr:e2 {:
-	RESULT = new LogicalhBinaryOp(e1, BinaryOps.LT, e2);
+	RESULT = new LogicalBinaryOp(e1, BinaryOps.LT, e2);
 :}
 | expr:e1 LTE expr:e2 {:
-	RESULT = new LogicalhBinaryOp(e1, BinaryOps.LTE, e2);
+	RESULT = new LogicalBinaryOp(e1, BinaryOps.LTE, e2);
 :}
 | expr:e1 GT expr:e2 {:
-	RESULT = new LogicalhBinaryOp(e1, BinaryOps.GT, e2);
+	RESULT = new LogicalBinaryOp(e1, BinaryOps.GT, e2);
 :}
 | expr:e1 GTE expr:e2 {:
-	RESULT = new LogicalhBinaryOp(e1, BinaryOps.GTE, e2);
+	RESULT = new LogicalBinaryOp(e1, BinaryOps.GTE, e2);
 :}
 | expr:e1 EQUAL expr:e2 {:
-	RESULT = new LogicalhBinaryOp(e1, BinaryOps.EQUAL, e2);
+	RESULT = new LogicalBinaryOp(e1, BinaryOps.EQUAL, e2);
 :}
 | expr:e1 NEQUAL expr:e2 {:
-	RESULT = new LogicalhBinaryOp(e1, BinaryOps.NEQUAL, e2);
+	RESULT = new LogicalBinaryOp(e1, BinaryOps.NEQUAL, e2);
 :};
 
 	
