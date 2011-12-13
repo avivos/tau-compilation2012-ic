@@ -82,7 +82,7 @@ terminal RP;
 terminal SEMI;
 terminal STATIC;
 terminal STRING;
-terminal QUOTE;
+terminal String QUOTE;
 terminal THIS;
 terminal TRUE;
 terminal VOID;
@@ -266,10 +266,10 @@ expr ::= location:loc {:
 | expr:earr DOT LENGTH:len {:
 	RESULT = new Length(earr);
 :}
-| expr binop expr {:
+| binop {:
 	RESULT = new 
 :}
-| unop expr {::}
+| unop {::}
 | literal {::}
 | LP expr RP {::};
 
@@ -306,48 +306,51 @@ location ::= ID:id {:
 	RESULT = new VariableLocation(idleft, id);
 :}
 | expr:e DOT ID:id {:
-	RESULT = new VariableLocation(eleft, )
+	RESULT = new VariableLocation(eleft, e, id);
 :}
-| expr LB expr RB {::};
+| expr:ar LB expr:indx RB {:
+	RESULT = new ArrayLocation(ar, indx):}; // is this saving the line number correctly ?
 
-binop ::= PLUS:p {:
-	RESULT = new MathBinaryOp(null, BinaryOps.PLUS, null);
+
+
+binop ::= expr:e1 PLUS:p expr:e2 {:
+	RESULT = new MathBinaryOp(e1, BinaryOps.PLUS, e2);
 :}
-| MINUS {:
-	RESULT = new MathBinaryOp(null, BinaryOps.MINUS, null);
+| expr:e1 MINUS expr:e2 {:
+	RESULT = new MathBinaryOp(e1, BinaryOps.MINUS, e2);
 :}
-| MULTIPLY {:
-	RESULT = new MathBinaryOp(null, BinaryOps.MULTIPLY, null);
+| expr:e1 MULTIPLY expr:e2 {:
+	RESULT = new MathBinaryOp(e1, BinaryOps.MULTIPLY, e2);
 :}
-| DIVIDE {:
-	RESULT = new MathBinaryOp(null, BinaryOps.DIVIDE, null);
+| expr:e1 DIVIDE expr:e2 {:
+	RESULT = new MathBinaryOp(e1, BinaryOps.DIVIDE, e2);
 :}
-| MOD {:
-	RESULT = new MathBinaryOp(null, BinaryOps.MOD, null);
+| expr:e1 MOD expr:e2 {:
+	RESULT = new MathBinaryOp(e1, BinaryOps.MOD, e2);
 :}
-| LAND {:
-	RESULT = new LogicalhBinaryOp(null, BinaryOps.LAND, null);
+| expr:e1 LAND expr:e2 {:
+	RESULT = new LogicalhBinaryOp(e1, BinaryOps.LAND, e2);
 :}
-| LOR {:
-	RESULT = new LogicalhBinaryOp(null, BinaryOps.LOR, null);
+| expr:e1 LOR expr:e2 {:
+	RESULT = new LogicalhBinaryOp(e1, BinaryOps.LOR, e2);
 :}
-| LT {:
-	RESULT = new LogicalhBinaryOp(null, BinaryOps.LT, null);
+| expr:e1 LT expr:e2 {:
+	RESULT = new LogicalhBinaryOp(e1, BinaryOps.LT, e2);
 :}
-| LTE {:
-	RESULT = new LogicalhBinaryOp(null, BinaryOps.LTE, null);
+| expr:e1 LTE expr:e2 {:
+	RESULT = new LogicalhBinaryOp(e1, BinaryOps.LTE, e2);
 :}
-| GT {:
-	RESULT = new LogicalhBinaryOp(null, BinaryOps.GT, null);
+| expr:e1 GT expr:e2 {:
+	RESULT = new LogicalhBinaryOp(e1, BinaryOps.GT, e2);
 :}
-| GTE {:
-	RESULT = new LogicalhBinaryOp(null, BinaryOps.GTE, null);
+| expr:e1 GTE expr:e2 {:
+	RESULT = new LogicalhBinaryOp(e1, BinaryOps.GTE, e2);
 :}
-| EQUAL {:
-	RESULT = new LogicalhBinaryOp(null, BinaryOps.EQUAL, null);
+| expr:e1 EQUAL expr:e2 {:
+	RESULT = new LogicalhBinaryOp(e1, BinaryOps.EQUAL, e2);
 :}
-| NEQUAL {:
-	RESULT = new LogicalhBinaryOp(null, BinaryOps.NEQUAL, null);
+| expr:e1 NEQUAL expr:e2 {:
+	RESULT = new LogicalhBinaryOp(e1, BinaryOps.NEQUAL, e2);
 :};
 
 	
@@ -359,11 +362,11 @@ unop ::= MINUS expr:e {:
 :}%prec LNEG;
 
 
-literal ::= INTEGER:i {:
-	RESULT = new Literal(ileft, LiteralTypes.INTEGER);
+literal ::= INTEGER:i {: 
+	RESULT = new Literal(ileft, LiteralTypes.INTEGER, i);
 :}
-| STRING:q {:
-	RESULT = new Literal(qleft, LiteralTypes.STRING);
+| QUOTE:q {:
+	RESULT = new Literal(qleft, LiteralTypes.STRING, q);
 :}
 | TRUE:t {:
 	RESULT = new Literal(tleft, LiteralTypes.TRUE);
