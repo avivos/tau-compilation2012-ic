@@ -1,6 +1,7 @@
 package IC.Parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import IC.AST.Field;
@@ -62,5 +63,44 @@ public class ParserCtrl {
 		
 		return retList;
 	}
+	
+	
+	
+	// this is for the syntax/lexical id translation
+	
+
+    private HashMap<Integer, String> tokenNames = null;
+
+    /**
+     * This method returns token name given token ID.
+     * 
+     * @param ID - The Token ID        
+     * @return The token Name
+     */
+    public String getTokenName(int ID) {
+            try {
+                    if (tokenNames == null) {
+                            initTokenNamesArray();
+                    }
+                    return tokenNames.get(ID);
+            } catch (Exception e) {
+                    return null;
+            }
+    }
+
+    /**
+     * This method is initializing a hash-map to hold a mapping from an integer
+     * representing a token, to the token name.
+     * 
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException
+     */
+    private void initTokenNamesArray() throws IllegalArgumentException,IllegalAccessException {
+            java.lang.reflect.Field[] fields = sym.class.getFields();
+            tokenNames = new HashMap<Integer, String>(fields.length);
+            for (java.lang.reflect.Field field : fields) {
+                    tokenNames.put(field.getInt(sym.class), field.getName());
+            }
+    }
 	
 }

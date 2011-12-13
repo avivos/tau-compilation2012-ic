@@ -23,10 +23,11 @@ public class SyntaxError extends Exception
     }
     
     public String toString(){
+    	ParserCtrl PC = ParserCtrl.getParserCtrl();
     	if (!have_content)
-    		return (this.errorLine+":"+this.msg+token_type);
+    		return (this.errorLine+":"+this.msg+PC.getTokenName(token_type));
     	else
-    		return (this.errorLine+":"+this.msg+token_type+token_value.toString());
+    		return (this.errorLine+":"+this.msg+PC.getTokenName(token_type)+": ("+token_value.toString()+")");
     }
 }
 
