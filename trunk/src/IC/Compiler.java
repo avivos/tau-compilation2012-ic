@@ -1,23 +1,18 @@
 package IC;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.util.ArrayList;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import IC.Parser.Parser;
 import IC.AST.ASTNode;
-import IC.AST.ICClass;
 import IC.AST.PrettyPrinter;
-import IC.AST.Program;
 import java_cup.runtime.*;
 
-import IC.Parser.LexicalError;
-import IC.Parser.LibraryParser;
-import IC.Parser.Token;
-import IC.Parser.sym;
 import IC.Parser.Lexer;
 
 
@@ -28,9 +23,19 @@ public class Compiler
 	private static boolean printASTFlag;
 	private static boolean libraryFlag = false;
 	private static String libraryFile;
+	private static PrintWriter log = null;
+	private static PrintWriter mainState = null;
 
 	public static void main(String[] args) {
 		try {
+			if (debugMode){
+				FileWriter outFile = new FileWriter("compiler.log");
+				log = new PrintWriter(outFile);
+				log.println("Starting Log writing");
+				
+				FileWriter stateFile = new FileWriter("compiler.state");
+				mainState = new PrintWriter(stateFile);
+			}
 			// handle arguments
 			parseMainArgs(args);
 
@@ -43,18 +48,47 @@ public class Compiler
 			parseFile(args[0]);
 		} catch (Exception e) {
 			System.out.print(e);
+			printState("ERROR");
+			closeFiles();
+			return;
 		}
 
-
+		printState("OK");
+		closeFiles();
+		return;
 	}
 
 	//////////
 	// these are some helper funcs.
+	
+	private static void closeFiles(){
+		if (debugMode){
+			//close PrintWriters
+			mainState.close();
+			log.close();			
+			
+		}
+	}
+	
+	private static void print(String msg, PrintWriter writer){
+		if (debugMode){
+			log.println(msg);
+		}
+	}
+	
+	private static void printState(String msg){
+		print(msg, mainState);
+	}
+	
+	private static void printToLog(String msg){
+		print(msg, log);		
+	}
 
 	private static void parseMainArgs(String[] args) {
 		Set<String> argSet = parseArgs(args);
 		if (argSet.isEmpty()) {
 			System.out.println("Error: Missing input file argument!");
+			printToLog("Error: Missing input file argument!");
 			printUsage();
 			System.exit(-1);
 		}
@@ -63,6 +97,7 @@ public class Compiler
 		}
 		for (String arg : args) {
 			if (arg.startsWith("-L")){
+				printToLog("a library file was given");
 				libraryFlag = true;
 				libraryFile = arg.substring(2);
 				break;
@@ -79,6 +114,8 @@ public class Compiler
 	
 	protected static void parseFile(String filename)
 			throws FileNotFoundException, Exception {
+		printToLog("\nParsing file: " + filename);
+		
 		FileReader txtFile = new FileReader(filename);
 		Lexer scanner = new Lexer(txtFile);
 		Parser parser = new Parser(scanner);
@@ -94,6 +131,8 @@ public class Compiler
 			PrettyPrinter printer = new PrettyPrinter(filename);
 			System.out.println(printer.visit(root));
 		}
+		printToLog("\nFinished Parsing file: " + filename + "" +
+				"=================================================");
 	}
 
 	public static void printUsage(){
