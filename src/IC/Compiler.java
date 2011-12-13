@@ -2,14 +2,22 @@ package IC;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import IC.Parser.Parser;
 import IC.AST.ASTNode;
+import IC.AST.ICClass;
 import IC.AST.PrettyPrinter;
+import IC.AST.Program;
 import java_cup.runtime.*;
 
+import IC.Parser.LexicalError;
+import IC.Parser.LibraryParser;
+import IC.Parser.Token;
+import IC.Parser.sym;
 import IC.Parser.Lexer;
 
 
@@ -24,29 +32,7 @@ public class Compiler
 	public static void main(String[] args) {
 		try {
 			// handle arguments
-			Set<String> argSet = parseArgs(args);
-			if (argSet.isEmpty()) {
-				System.out.println("Error: Missing input file argument!");
-				printUsage();
-				System.exit(-1);
-			}
-			if (argSet.contains("-print-ast")) {
-				printASTFlag = true;
-			}
-			for (String arg : args) {
-				if (arg.startsWith("-L")){
-					libraryFlag = true;
-					libraryFile = arg.substring(2);
-					break;
-				}
-			}
-
-			if (argSet.contains("-debug") || debugMode){
-				printASTFlag = printtokens = true;
-			}
-			else {
-				printtokens = false;
-			}
+			parseMainArgs(args);
 
 			// parse the library file if needed
 			if (libraryFlag){
@@ -61,11 +47,36 @@ public class Compiler
 
 
 	}
-	
-	
+
 	//////////
 	// these are some helper funcs.
 
+	private static void parseMainArgs(String[] args) {
+		Set<String> argSet = parseArgs(args);
+		if (argSet.isEmpty()) {
+			System.out.println("Error: Missing input file argument!");
+			printUsage();
+			System.exit(-1);
+		}
+		if (argSet.contains("-print-ast")) {
+			printASTFlag = true;
+		}
+		for (String arg : args) {
+			if (arg.startsWith("-L")){
+				libraryFlag = true;
+				libraryFile = arg.substring(2);
+				break;
+			}
+		}
+
+		if (argSet.contains("-debug") || debugMode){
+			printASTFlag = printtokens = true;
+		}
+		else {
+			printtokens = false;
+		}
+	}
+	
 	protected static void parseFile(String filename)
 			throws FileNotFoundException, Exception {
 		FileReader txtFile = new FileReader(filename);
