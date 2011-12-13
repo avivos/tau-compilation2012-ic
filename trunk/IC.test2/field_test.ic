@@ -1,0 +1,27 @@
+// TEST FILE FOR type LEVEL
+
+class A extends B {
+
+//primitives
+int i, k, sad ,sadf;
+int j;
+string a, b, c;
+A asdf;
+boolean b;
+
+//1-dim arrays
+int[] arra;
+string[] arrb;
+boolean[] arrc;
+C[] arrd;
+
+//multi-dim. arrs
+int[][] arra;
+string[][][] arrb;
+boolean[][][][][][][] arrc;
+C[][][][][][][][][][][][][] arrd;
+
+void m(int a){
+	int[] arr = x = 1;
+}
+}

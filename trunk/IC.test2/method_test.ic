@@ -1,0 +1,38 @@
+// TEST FILE FOR method LEVEL
+
+class A extends B {
+//no formal arguments
+
+void m1(){}
+static void m2(){}
+
+int m3() {}
+static int m4(){}
+
+string m5(){}
+static string m6(){}
+
+boolean m7(){}
+static boolean m8(){}
+
+C m9(){}
+static C m10(){}
+
+
+//with formal arguments
+
+void m1(int a){}
+static void m2(){}
+
+int m3(int a, int b) {}
+static int m4(){}
+
+string m5(string a, D213 a23){}
+static string m6(boolean sdf){}
+
+boolean m7(boolean a, boolean b){}
+static boolean m8(){}
+
+C m9(string a, D213 a23,string a, D213 a23,string a, D213 a23,string a, D213 a23){}
+static C m10(string a, D213 a23,string a, D213 a23,string a, D213 a23,string a, D213 a23,string a, D213 a23){}
+}

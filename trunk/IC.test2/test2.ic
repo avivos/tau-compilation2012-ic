@@ -1,0 +1,6 @@
+class T1 {
+int i;
+String s;
+void v;
+
+}
