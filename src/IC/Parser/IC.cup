@@ -25,13 +25,16 @@ public int getLine() {
 
 public void syntax_error(Symbol s){
 	// do nothing
+	// we want to throw an informative exception
 }
 
-public void unrecovered_syntax_error(Symbol s) throws Exception {
+public void unrecovered_syntax_error(Symbol s) throws SyntaxError {
 	done_parsing();
 	Token tok = (Token) s;
-	//System.out.println("Line " + tok.getLine()+": Syntax error; unexpected " + tok.id);
-	throw new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.getLine());
+	if (tok.value == null)
+		throw new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.getLine());
+	else
+		throw new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.value ,tok.getLine());
 }
 :}
 

@@ -7,7 +7,7 @@ import java_cup.runtime.Symbol;
 public class Token extends Symbol {
 	public int id = 0;
 	public int line = 0;
-	public Object value;
+	public Object value = null; //this is null so that we could identify the literals when printing errors in SyntaxError
 	
 	
     public Token(int id, int line) {
