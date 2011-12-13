@@ -34,6 +34,20 @@ public class PrettyPrinter implements Visitor {
 		indent(output, null);
 	}
 
+	// this is a dispatching function we wrote
+	//to simplify some code in class Compiler 
+	public Object visit(ASTNode node) {
+		if (node instanceof Program){
+			return visit( (Program)node);
+		}
+		else if (node instanceof ICClass){
+			return visit( (ICClass)node);
+		}
+		else {
+			return "error";
+		}
+	}
+	
 	public Object visit(Program program) {
 		StringBuffer output = new StringBuffer();
 
