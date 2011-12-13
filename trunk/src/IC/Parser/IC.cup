@@ -217,21 +217,39 @@ method ::= type:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {:
 stmt ::= location:loc ASSIGN expr:ex SEMI {:
 	RESULT = new Assignment(loc, ex); 
 :}
-| call SEMI {:
-	
+| call:c SEMI {:
+	RESULT = new CallStatement(c);
 :}
-| RETURN SEMI {:
-	
+| RETURN:r SEMI {:
+	RESULT = new Return(rleft);
 :}
-| RETURN expr SEMI {::}
-| IF LP expr RP stmt {::}
-| IF LP expr RP stmt ELSE stmt {::}
-| WHILE LP expr RP stmt {::}
-| BREAK SEMI {::}
-| CONTINUE SEMI {::}
-| stmt_block {::}
-| type ID:name {::}
-| type ID:name ASSIGN expr SEMI {::};
+| RETURN:r expr:e SEMI {:
+	RESULT = new Return(rleft,e);
+:}
+| IF LP expr:e RP stmt:s {:
+	RESULT = If(e, s);
+:}
+| IF LP expr:e RP stmt:s ELSE stmt:es {:
+	RESULT = If(e, s, es);
+:}
+| WHILE LP expr:e RP stmt:s {:
+	RESULT = new While(e, s);
+:}
+| BREAK:b SEMI {:
+	RESULT = new Break(bleft);
+:}
+| CONTINUE:c SEMI {:
+	RESULT = new Continue(cleft);
+:}
+| stmt_block:sb {:
+	RESULT = new StatmentBlock(sbleft, sb);
+:}
+| type:t ID:name SEMI {:
+	RESULT = new LocalVariable(t, name);
+:}
+| type:t ID:name ASSIGN expr:e SEMI {:
+	RESULT = new LocalVariable(t, name, e);
+:};
 
 
 stmt_block ::= LCBR stmt_list:sl RCBR{:
@@ -257,28 +275,29 @@ expr ::= location:loc {:
 | THIS:t {:
 	RESULT = new This(tleft);
 :}
-| NEW:n CLASS:cls LP RP {:
+| NEW CLASS:cls LP RP {:
 	RESULT = new NewClass(nleft, cls);	
 :}
-| NEW:n type:t LB expr:e RB {:
+| NEW type:t LB expr:e RB {:
 	RESULT = new NewArray(t, e);
 :}
 | expr:earr DOT LENGTH:len {:
 	RESULT = new Length(earr);
 :}
-| binop {:
-	RESULT = new 
+| binop:b {:
+	RESULT = b;
 :}
-| unop {::}
-| literal {::}
-| LP expr RP {::};
-
+| unop:u {:RESULT = u;:}
+| literal:l {:RESULT = l;:}
+| LP expr:e RP {:RESULT = e; :};
 
 
 call ::= staticCall:sc {:
 	RESULT = sc;
 :}
-|virtualCall {::};
+|virtualCall:vc {:
+	RESULT = vc;
+:};
 
 expr_list ::= expr:e {:
 	RESULT = new List<Expression>();
@@ -296,11 +315,19 @@ staticCall ::= CLASS_ID:class_name DOT ID:method LP RP {:
 	RESULT = new StaticCall(class_nameleft, class_name, method, expr_list);
 :};
 
-virtualCall ::= ID:method LP RP {::}
-| ID:method LP expr_list RP {::}
-| expr DOT ID ID:method LP expr_list RP {::}
-| expr DOT ID ID:method LP RP {::};
-
+virtualCall ::= ID:method LP RP {:
+	RESULT = new VirtualCall(methodleft, method, new List<Expression>() );
+:}
+| ID:method LP expr_list:el RP {:
+	RESULT = new VirtualCall(methodleft, method, el );
+:}
+| expr:e DOT ID:method LP RP {:
+	RESULT = new VirtualCall(methodleft, e, method,new List<Expression>() );
+	:}
+| expr:e DOT ID:method LP expr_list:el RP {:
+	RESULT = new VirtualCall(methodleft, e, method,el );
+:}
+;
 
 location ::= ID:id {:
 	RESULT = new VariableLocation(idleft, id);
