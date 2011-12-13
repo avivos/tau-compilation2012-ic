@@ -1,1 +1,2 @@
 C:\Users\Admin\workspace\IC_COMPILER\src\IC\Parser>java -jar c:\cup\java-cup-11a.jar IC.cup
+java JFlex.Main IC.lex
