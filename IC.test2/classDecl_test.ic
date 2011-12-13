@@ -1,0 +1,9 @@
+// TEST FILE FOR classDecl LEVEL
+
+class C1{}
+class C2 extends C3 {} 
+
+class D {}
+
+
+class ASDFSAD extends Dp3r8u3h {}
