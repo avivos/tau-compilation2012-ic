@@ -31,7 +31,7 @@ public void unrecovered_syntax_error(Symbol s) throws Exception {
 	done_parsing();
 	Token tok = (Token) s;
 	//System.out.println("Line " + tok.getLine()+": Syntax error; unexpected " + tok.id);
-	throw new LexicalError("Syntax Error: unexpected token:" + tok.id ,tok.getLine());
+	throw new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.getLine());
 }
 :}
 
