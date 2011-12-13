@@ -15,6 +15,9 @@ class C{
 		//virtual call
 		func();
 		funcT(insideFoo(), param.field, arr.length);
+		
+		//this
+		while (this.val == 1) break;
 	}
 
 }
