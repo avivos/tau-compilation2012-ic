@@ -1,0 +1,20 @@
+class C{
+	int foo(){
+	
+		// location = expression ;
+		a = "strung string";
+		
+		// call ;
+		
+		//static call
+		Obj.getSome();
+		O1bj.get_some(actual_param);
+		O1bj.get_some(actual_param, actualParam);
+		
+		
+		//virtual call
+		func();
+		funcT(insideFoo(), param.field, arr.length);
+	}
+
+}
