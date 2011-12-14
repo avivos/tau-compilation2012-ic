@@ -1,0 +1,78 @@
+class Test {
+	}
+	
+class Test2 extends Test {
+	}
+	
+class Test3 extends Test {
+	int a;
+	int b, c;
+	int[] d;
+	String s;
+	Boolean b;
+	Test t;
+	
+	static Test method_1(){}
+	
+	int method_2(int a, String b){
+		int i = 0;
+	}
+	
+	int n;
+	
+	void method_3(String [] st){
+		if (a==3)
+			a=a+1;
+		
+		if (a<=3)
+			a=-a;
+		else
+			a=-a;
+				
+		if (a!=a)
+			a=b;
+			
+		method_2(1,2);
+		Test2.method_1();
+		
+		while (true) {break;}
+		
+		break;
+		continue;
+		return 3;
+		return;
+		
+		this.a = 3;
+		
+		Test1 b = new Test1();
+		
+		b = a.length;
+		
+		if (a.length == 1)
+			return;
+		
+		a=b+c;
+		a=b*c;
+		a=a/0;
+		a=a+b*c;
+		a=a*b+c;
+		a=-a+b;
+		a=-a*b;
+		a=-a-b;
+		a=a+-b;
+		a=b%10;
+		
+		a=b && c;
+		a=b || c;
+		
+		a=b+c<=d-c-!e+h[1]&&h[2]||h[3];
+		
+		a=123;
+		a="easd";
+		a=true;
+		a=false;
+		a=null;
+
+	}
+	
+	}
