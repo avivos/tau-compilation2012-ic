@@ -4,9 +4,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-public class CompilerTest {
+public class LegalCompilerTest {
 
-	String testDir = "src/IC.test2/";
+	String testDir = "src/IC.test2/legal_input/";
 	// LEGAL FILES - TESTS
 	@Test
 	public void empty_program_file() {
