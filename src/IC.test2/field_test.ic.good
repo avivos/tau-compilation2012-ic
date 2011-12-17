@@ -22,6 +22,6 @@ boolean[][][][][][][] arrc;
 C[][][][][][][][][][][][][] arrd;
 
 void m(int a){
-	int[] arr = x = 1;
+	//int[] arr = x = 1;
 }
 }

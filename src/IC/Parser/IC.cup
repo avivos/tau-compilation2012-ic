@@ -428,7 +428,7 @@ formals_list ::= type:t ID:name 	{: //this is param list for a method
 	RESULT = new ArrayList<Formal>();
 	RESULT.add(var);
 :}
-| formals:vars COMMA type:t ID:name	{:
+| formals_list:vars COMMA type:t ID:name	{:
 	Formal var = new Formal(t,name);
 	vars.add(var);
 	RESULT = vars;

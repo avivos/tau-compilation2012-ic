@@ -18,7 +18,7 @@ import IC.Parser.Lexer;
 
 public class Compiler
 {
-	private static final boolean debugMode = false;
+	private static boolean debugMode = false;
 	private static boolean printtokens;
 	private static boolean printASTFlag;
 	private static boolean libraryFlag = false;
@@ -28,16 +28,17 @@ public class Compiler
 
 	public static void main(String[] args) {
 		try {
+			// handle arguments
+			parseMainArgs(args);
+			
 			if (debugMode){
 				FileWriter outFile = new FileWriter("compiler.log");
 				log = new PrintWriter(outFile);
 				log.println("Starting Log writing");
 				
-				FileWriter stateFile = new FileWriter("compiler.state");
+				FileWriter stateFile = new FileWriter("main.state");
 				mainState = new PrintWriter(stateFile);
 			}
-			// handle arguments
-			parseMainArgs(args);
 
 			// parse the library file if needed
 			if (libraryFlag){
@@ -72,7 +73,7 @@ public class Compiler
 	
 	private static void print(String msg, PrintWriter writer){
 		if (debugMode){
-			log.println(msg);
+			writer.println(msg);
 		}
 	}
 	
@@ -104,8 +105,9 @@ public class Compiler
 			}
 		}
 
-		if (argSet.contains("-debug") || debugMode){
-			printASTFlag = printtokens = true;
+		if (argSet.contains("-debug")){
+			//printASTFlag = printtokens = true;
+			debugMode = true;
 		}
 		else {
 			printtokens = false;

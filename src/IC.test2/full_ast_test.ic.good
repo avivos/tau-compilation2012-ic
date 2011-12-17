@@ -78,15 +78,15 @@ class Test3 extends Test {
 	//================================== errors -
 	
 	
-	String s == "a";
+	String s = "a";
 	
-	y&x = "test";
+	yx = "test";
 	
-	int method_3(String [] st){}
-	class Test(){}
-	a=b[int a];
-	a=b[{}];
-	a=b[];
+	//int method_3(String [] st){}
+	//class Test(){}
+	//a=b[int a];
+	//a=b[{}];
+	//a=b[];
 	
 	
 	
@@ -94,4 +94,4 @@ class Test3 extends Test {
 	}
 }
 
-class Test3 extends Test extends Test {}
+//class Test3 extends Test extends Test {}
