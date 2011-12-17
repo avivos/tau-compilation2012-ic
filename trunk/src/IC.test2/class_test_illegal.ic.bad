@@ -1,0 +1,5 @@
+class C{
+	static void fun(string s,string s2, boolean b, CLS c){
+		//if ();
+	}
+}
