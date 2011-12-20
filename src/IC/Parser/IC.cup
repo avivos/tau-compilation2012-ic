@@ -119,6 +119,7 @@ non terminal Location location;
 non terminal Expression expr;
 non terminal List<Expression> expr_list;
 non terminal Statement stmt;
+non terminal Statement stmt_if;
 non terminal List<Statement> stmt_list;
 non terminal StatementsBlock stmt_block;
 non terminal Call call;
@@ -235,10 +236,10 @@ stmt ::= location:loc ASSIGN expr:ex SEMI {:
 | RETURN:r expr:e SEMI {:
 	RESULT = new Return(rleft,e);
 :}
-| IF LP expr:e RP stmt:s {:
+| IF LP expr:e RP stmt_if:s {:
 	RESULT = new If(e, s);
 :}
-| IF LP expr:e RP stmt:s ELSE stmt:es {:
+| IF LP expr:e RP stmt_if:s ELSE stmt_if:es {:
 	RESULT = new If(e, s, es);
 :}
 | WHILE LP expr:e RP stmt:s {:
@@ -259,6 +260,45 @@ stmt ::= location:loc ASSIGN expr:ex SEMI {:
 | type:t ID:name ASSIGN expr:e SEMI {:
 	RESULT = new LocalVariable(t, name, e);
 :};
+
+// this is for prevention of var decleration insides if (bonus #2)
+stmt_if ::= location:loc ASSIGN expr:ex SEMI {:
+	RESULT = new Assignment(loc, ex); 
+:}
+| call:c SEMI {:
+	RESULT = new CallStatement(c);
+:}
+| RETURN:r SEMI {:
+	RESULT = new Return(rleft);
+:}
+| RETURN:r expr:e SEMI {:
+	RESULT = new Return(rleft,e);
+:}
+| IF LP expr:e RP stmt_if:s {:
+	RESULT = new If(e, s);
+:}
+| IF LP expr:e RP stmt_if:s ELSE stmt_if:es {:
+	RESULT = new If(e, s, es);
+:}
+| WHILE LP expr:e RP stmt:s {:
+	RESULT = new While(e, s);
+:}
+| BREAK:b SEMI {:
+	RESULT = new Break(bleft);
+:}
+| CONTINUE:c SEMI {:
+	RESULT = new Continue(cleft);
+:}
+| stmt_block:sb {:
+	RESULT = sb;
+:}
+//| type:t ID:name SEMI {:
+//	RESULT = new LocalVariable(t, name);
+//:}
+//| type:t ID:name ASSIGN expr:e SEMI {:
+//	RESULT = new LocalVariable(t, name, e);
+//:}
+;
 
 
 stmt_block ::= LCBR stmt_list:sl RCBR{:
