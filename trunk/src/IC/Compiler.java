@@ -30,12 +30,12 @@ public class Compiler
 		try {
 			// handle arguments
 			parseMainArgs(args);
-			
+
 			if (debugMode){
 				FileWriter outFile = new FileWriter("compiler.log");
 				log = new PrintWriter(outFile);
 				log.println("Starting Log writing");
-				
+
 				FileWriter stateFile = new FileWriter("main.state");
 				mainState = new PrintWriter(stateFile);
 			}
@@ -61,26 +61,26 @@ public class Compiler
 
 	//////////
 	// these are some helper funcs.
-	
+
 	private static void closeFiles(){
 		if (debugMode){
 			//close PrintWriters
 			mainState.close();
 			log.close();			
-			
+
 		}
 	}
-	
+
 	private static void print(String msg, PrintWriter writer){
 		if (debugMode){
 			writer.println(msg);
 		}
 	}
-	
+
 	private static void printState(String msg){
 		print(msg, mainState);
 	}
-	
+
 	private static void printToLog(String msg){
 		print(msg, log);		
 	}
@@ -113,25 +113,29 @@ public class Compiler
 			printtokens = false;
 		}
 	}
-	
+
 	protected static void parseFile(String filename)
 			throws FileNotFoundException, Exception {
 		printToLog("\nParsing file: " + filename);
-		
+
 		FileReader txtFile = new FileReader(filename);
 		Lexer scanner = new Lexer(txtFile);
 		Parser parser = new Parser(scanner);
 		parser.printTokens = printtokens;
 
 		Symbol parseSymbol = parser.parse();
-		System.out.println("Parsed " + filename + " successfully!");
-		ASTNode root = (ASTNode) parseSymbol.value;
 
-		// Pretty-print the program to System.out if needed
-		if (printASTFlag){
-			//input file printer
-			PrettyPrinter printer = new PrettyPrinter(filename);
-			System.out.println(printer.visit(root));
+		if (parseSymbol!=null)
+		{
+			System.out.println("Parsed " + filename + " successfully!");
+			ASTNode root = (ASTNode) parseSymbol.value;
+
+			// Pretty-print the program to System.out if needed
+			if (printASTFlag ){
+				//input file printer
+				PrettyPrinter printer = new PrettyPrinter(filename);
+				System.out.println(printer.visit(root));
+			}
 		}
 		printToLog("\nFinished Parsing file: " + filename + "" +
 				"=================================================");
