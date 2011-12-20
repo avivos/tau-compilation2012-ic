@@ -48,9 +48,6 @@ public class LegalCompilerTest {
 		assertTrue(TestUtils.runTestFile(testDir + "full_ast_test_legal.ic.good", "-debug"));
 	}
 
-	@Test
-	public void full_ast_test() {
-		assertTrue(TestUtils.runTestFile(testDir + "full_ast_test.ic.good", "-print-ast -debug"));
-	}
+	
 	
 }

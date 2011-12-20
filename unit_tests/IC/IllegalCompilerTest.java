@@ -15,6 +15,11 @@ public class IllegalCompilerTest {
 	public void class_test2_illegal() {
 		assertTrue(TestUtils.runTestFile(testDir + "ricki_test_error_lines.ic.bad", "-debug"));
 	}
+	
+	@Test
+	public void full_ast_test() {
+		assertTrue(TestUtils.runTestFile(testDir + "full_ast_test.ic.bad", "-print-ast -debug"));
+	}
 }
 
 

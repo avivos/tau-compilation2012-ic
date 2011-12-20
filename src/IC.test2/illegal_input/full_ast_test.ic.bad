@@ -4,6 +4,24 @@ class Test {
 class Test2 extends Test {
 	}
 	
+class Jhgsdhjgdk kjhasfkj kjasgkjfgs {
+
+void method() {}
+int x;
+}
+
+	
+class Test2 ext t {
+	}
+
+class Test2 extends Test {
+		int x;
+		int y
+		int z;
+
+	
+	}
+	
 class Test3 extends Test {
 	int a;
 	int b, c;
@@ -79,11 +97,13 @@ class Test3 extends Test {
 	
 	if (true)
 		int x;
+		
+	
 	
 	
 	String s = "a";
 	
-	yx = "test";
+	//y&&x = "test";
 	
 	//int method_3(String [] st){}
 	//class Test(){}

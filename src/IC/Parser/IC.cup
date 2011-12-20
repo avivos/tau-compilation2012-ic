@@ -6,11 +6,14 @@ import IC.*;
 import java.util.List;
 import java.util.ArrayList;
 import IC.UnaryOps;
+
+public boolean error_flag = false;
 parser code  {:
 	/** Causes the parsr to print every token it reads.
 	 * This is useful for debugging.
 	 */
 	public boolean printTokens;
+	
 
 private Lexer lexer;
 
@@ -26,11 +29,22 @@ public int getLine() {
 public void syntax_error(Symbol s){
 	// do nothing
 	// we want to throw an informative exception
+	Token tok = (Token) s;
+	SyntaxError err;
+	error_flag = true;
+	
+	if (tok.value == null)
+		err = new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.getLine());
+	else
+		err = new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.value ,tok.getLine());
+	
+	System.out.print(err);
 }
 
 public void unrecovered_syntax_error(Symbol s) throws SyntaxError {
 	done_parsing();
 	Token tok = (Token) s;
+	error_flag = true;
 	if (tok.value == null)
 		throw new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.getLine());
 	else
@@ -148,7 +162,10 @@ precedence left IF, ELSE;
 // The grammar
 
 program ::= class_list:cl {:
-	RESULT = new Program(cl); 
+	if (!error_flag){
+		RESULT = new Program(cl);
+	} else
+		RESULT = null;
 	:};
 
 class_list ::= class_list:list classDecl:name {:
@@ -164,7 +181,9 @@ classDecl ::= CLASS CLASS_ID:name LCBR class_code:cc RCBR {:
 :}
 | CLASS CLASS_ID:name EXTENDS CLASS_ID:parent LCBR class_code:cc RCBR {:
 		RESULT = new ICClass(nameleft, name, parent, cc.releaseFieldList(), cc.releaseMethodList());
-:};
+:}
+| error LCBR class_code:cc RCBR {::}
+;
 
 
 class_code ::= class_code:cc field_list:f {: 
@@ -181,7 +200,8 @@ class_code ::= class_code:cc field_list:f {:
 
 field_list ::= type:t multi_id:list SEMI {:
 	RESULT = ParserCtrl.getParserCtrl().convertToFieldList(t, list);
-:};
+:}
+;
 
 multi_id ::= ID:name {:
 	RESULT = new ArrayList<String>();
@@ -259,7 +279,9 @@ stmt ::= location:loc ASSIGN expr:ex SEMI {:
 :}
 | type:t ID:name ASSIGN expr:e SEMI {:
 	RESULT = new LocalVariable(t, name, e);
-:};
+:}
+| error SEMI {::}
+;
 
 // this is for prevention of var decleration insides if (bonus #2)
 stmt_if ::= location:loc ASSIGN expr:ex SEMI {:
@@ -292,12 +314,8 @@ stmt_if ::= location:loc ASSIGN expr:ex SEMI {:
 | stmt_block:sb {:
 	RESULT = sb;
 :}
-//| type:t ID:name SEMI {:
-//	RESULT = new LocalVariable(t, name);
-//:}
-//| type:t ID:name ASSIGN expr:e SEMI {:
-//	RESULT = new LocalVariable(t, name, e);
-//:}
+| error SEMI {::}
+
 ;
 
 
