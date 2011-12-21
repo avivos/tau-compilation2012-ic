@@ -125,7 +125,7 @@ public class Compiler
 
 		Symbol parseSymbol = parser.parse();
 
-		if (parseSymbol!=null)
+		if ((parseSymbol!=null) && (parseSymbol.value!=null)) // need both checks for "segfault" check
 		{
 			System.out.println("Parsed " + filename + " successfully!");
 			ASTNode root = (ASTNode) parseSymbol.value;
@@ -136,6 +136,9 @@ public class Compiler
 				PrettyPrinter printer = new PrettyPrinter(filename);
 				System.out.println(printer.visit(root));
 			}
+		} else 
+		{
+			System.out.println("Parsing of " + filename + " failed.");
 		}
 		printToLog("\nFinished Parsing file: " + filename + "" +
 				"=================================================");
