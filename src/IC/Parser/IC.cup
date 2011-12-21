@@ -7,12 +7,13 @@ import java.util.List;
 import java.util.ArrayList;
 import IC.UnaryOps;
 
-public boolean error_flag = false;
+
 parser code  {:
 	/** Causes the parsr to print every token it reads.
 	 * This is useful for debugging.
 	 */
 	public boolean printTokens;
+	public boolean error_flag = false;
 	
 
 private Lexer lexer;
@@ -162,7 +163,7 @@ precedence left IF, ELSE;
 // The grammar
 
 program ::= class_list:cl {:
-	if (!error_flag){
+	if (!this.parser.error_flag){
 		RESULT = new Program(cl);
 	} else
 		RESULT = null;
