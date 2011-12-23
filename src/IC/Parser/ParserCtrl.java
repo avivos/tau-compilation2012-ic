@@ -71,12 +71,7 @@ public class ParserCtrl {
 
     private HashMap<Integer, String> tokenNames = null;
 
-    /**
-     * This method returns token name given token ID.
-     * 
-     * @param ID - The Token ID        
-     * @return The token Name
-     */
+    
     public String getTokenName(int ID) {
             try {
                     if (tokenNames == null) {
@@ -88,14 +83,7 @@ public class ParserCtrl {
             }
     }
 
-    /**
-     * This method is initializing a hash-map to hold a mapping from an integer
-     * representing a token, to the token name.
-     * 
-     * @throws IllegalArgumentException
-     * @throws IllegalAccessException
-     */
-    private void initTokenNamesArray() throws IllegalArgumentException,IllegalAccessException {
+   private void initTokenNamesArray() throws IllegalArgumentException,IllegalAccessException {
             java.lang.reflect.Field[] fields = sym.class.getFields();
             tokenNames = new HashMap<Integer, String>(fields.length);
             for (java.lang.reflect.Field field : fields) {
