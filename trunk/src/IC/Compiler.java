@@ -1,7 +1,6 @@
 package IC;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -26,6 +25,7 @@ public class Compiler
 	private static PrintWriter log = null;
 	private static PrintWriter mainState = null;
 
+	
 	public static void main(String[] args) {
 		try {
 			// handle arguments
@@ -47,6 +47,7 @@ public class Compiler
 
 			// Parse the input file
 			parseFile(args[0]);
+			
 		} catch (Exception e) {
 			System.out.print(e);
 			printState("ERROR");
@@ -59,6 +60,8 @@ public class Compiler
 		return;
 	}
 
+	
+	
 	//////////
 	// these are some helper funcs.
 
@@ -125,8 +128,8 @@ public class Compiler
 
 		Symbol parseSymbol = parser.parse();
 
-		if ((parseSymbol!=null) && (parseSymbol.value!=null)) // need both checks for "segfault" check
-		{
+		if ((parseSymbol!=null) && (parseSymbol.value!=null)) { // need both checks for "segfault" check
+		
 			System.out.println("Parsed " + filename + " successfully!");
 			ASTNode root = (ASTNode) parseSymbol.value;
 
@@ -136,8 +139,8 @@ public class Compiler
 				PrettyPrinter printer = new PrettyPrinter(filename);
 				System.out.println(printer.visit(root));
 			}
-		} else 
-		{
+		} 
+		else {
 			System.out.println("Parsing of " + filename + " failed.");
 		}
 		printToLog("\nFinished Parsing file: " + filename + "" +

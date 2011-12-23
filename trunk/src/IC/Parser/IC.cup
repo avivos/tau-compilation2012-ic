@@ -34,12 +34,22 @@ public void syntax_error(Symbol s){
 	SyntaxError err;
 	error_flag = true;
 	
-	if (tok.value == null)
-		err = new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.getLine());
-	else
-		err = new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.value ,tok.getLine());
+	ParserCtrl PC = ParserCtrl.getParserCtrl();
+	String errMsg = null;
+	if (tok.value == null){
+		errMsg = tok.getLine() +":"+"Syntax Error: unexpected token: " + PC.getTokenName(tok.id) + "\n";
+//		err = new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.getLine());
+	}
+	else {
+		errMsg = tok.getLine() +":"+"Syntax Error: unexpected token: " + PC.getTokenName(tok.id) +" (" + tok.value.toString() + ")\n";
+//		err = new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.value ,tok.getLine());
+	}
+	// ADI - this is the same thing you did, only without constructing stuff
 	
-	System.out.print(err);
+	//String errMsg = tok.getLine() +":"+"Syntax Error: unexpected token: " + PC.getTokenName(tok.id) + "\n";
+	System.out.print(errMsg);
+	
+	//System.out.print(err);
 }
 
 public void unrecovered_syntax_error(Symbol s) throws SyntaxError {
