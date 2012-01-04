@@ -38,18 +38,15 @@ public void syntax_error(Symbol s){
 	String errMsg = null;
 	if (tok.value == null){
 		errMsg = tok.getLine() +":"+"Syntax Error: unexpected token: " + PC.getTokenName(tok.id) + "\n";
-//		err = new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.getLine());
+
 	}
 	else {
 		errMsg = tok.getLine() +":"+"Syntax Error: unexpected token: " + PC.getTokenName(tok.id) +" (" + tok.value.toString() + ")\n";
-//		err = new SyntaxError("Syntax Error: unexpected token:", tok.id ,tok.value ,tok.getLine());
+
 	}
-	// ADI - this is the same thing you did, only without constructing stuff
-	
-	//String errMsg = tok.getLine() +":"+"Syntax Error: unexpected token: " + PC.getTokenName(tok.id) + "\n";
+
 	System.out.print(errMsg);
-	
-	//System.out.print(err);
+
 }
 
 public void unrecovered_syntax_error(Symbol s) throws SyntaxError {
@@ -63,7 +60,7 @@ public void unrecovered_syntax_error(Symbol s) throws SyntaxError {
 }
 :}
 
-// This is just for debugging
+
 scan with {:
 	Token t = lexer.next_token();
 	t.left = t.getLine();
@@ -137,7 +134,7 @@ non terminal Type type;
 non terminal List<Formal> formals;
 non terminal List<Formal> formals_list;
 non terminal Method method;
-non terminal Field field;			//DEBUG
+non terminal Field field;
 non terminal List<Field> field_list;
 non terminal ParserCtrl class_code;
 non terminal Location location;
@@ -158,6 +155,7 @@ non terminal List<String> multi_id;
 //////////////////////////
 // Precedence declarations
 precedence right Empty, NONEmpty;
+
 precedence right ASSIGN;
 precedence left LOR;
 precedence left LAND;
@@ -175,8 +173,9 @@ precedence left IF, ELSE;
 program ::= class_list:cl {:
 	if (!this.parser.error_flag){
 		RESULT = new Program(cl);
-	} else
+	} else{
 		RESULT = null;
+	}
 	:};
 
 class_list ::= class_list:list classDecl:name {:
@@ -193,7 +192,7 @@ classDecl ::= CLASS CLASS_ID:name LCBR class_code:cc RCBR {:
 | CLASS CLASS_ID:name EXTENDS CLASS_ID:parent LCBR class_code:cc RCBR {:
 		RESULT = new ICClass(nameleft, name, parent, cc.releaseFieldList(), cc.releaseMethodList());
 :}
-| error LCBR class_code:cc RCBR {::}
+| error LCBR class_code RCBR {::}
 ;
 
 
@@ -209,9 +208,14 @@ class_code ::= class_code:cc field_list:f {:
 	RESULT = ParserCtrl.getParserCtrl();
 :};
 
+
+
 field_list ::= type:t multi_id:list SEMI {:
 	RESULT = ParserCtrl.getParserCtrl().convertToFieldList(t, list);
 :}
+| error SEMI {:
+	RESULT = ParserCtrl.getParserCtrl().convertToFieldList(new PrimitiveType(0, DataTypes.INT), new ArrayList<String>());
+:}// vars error
 ;
 
 multi_id ::= ID:name {:
@@ -241,6 +245,9 @@ type ::= INT:name {:
 :};
 
 
+
+
+
 method ::= type:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {:
 	RESULT = new VirtualMethod(type_name, m_name,f,sl); 
 :}
@@ -252,9 +259,11 @@ method ::= type:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {:
 :}
 | STATIC VOID:type_name ID:m_name LP formals:f RP LCBR stmt_list:sl RCBR {: 
 	RESULT = new StaticMethod(new PrimitiveType(type_nameleft, DataTypes.VOID), m_name, f,sl); 
-:};
+:}
+| error LCBR stmt_list RCBR {::}     
+;
 
-	
+
 stmt ::= location:loc ASSIGN expr:ex SEMI {:
 	RESULT = new Assignment(loc, ex); 
 :}
@@ -328,6 +337,13 @@ stmt_if ::= location:loc ASSIGN expr:ex SEMI {:
 | error SEMI {::}
 
 ;
+
+
+
+
+
+
+	
 
 
 stmt_block ::= LCBR stmt_list:sl RCBR{:

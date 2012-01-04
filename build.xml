@@ -32,7 +32,7 @@
        <java classname="java_cup.Main">
        <arg value="-parser"/>
        <arg value="Parser"/>
-      <!-- <arg value="-dump"/> -->
+      <arg value="-dump_grammar"/> 
        <arg value="${src}/IC/Parser/IC.cup"/>
     </java>
     <replace file="Parser.java" value='@SuppressWarnings(value={"all"}) class Parser'>

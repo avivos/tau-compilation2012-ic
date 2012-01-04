@@ -10,6 +10,8 @@ import java.util.List;
 public class VirtualCall extends Call {
 
 	private Expression location = null;
+	public String className; //new
+    public VirtualMethod virtualMethod;//new
 
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
