@@ -13,14 +13,17 @@ import IC.AST.PrettyPrinter;
 import java_cup.runtime.*;
 
 import IC.Parser.Lexer;
+import Traversal.SemanticChecker;
+import Traversal.SymbolTableCreator;
 
 
 public class Compiler
 {
 	private static boolean debugMode = false;
 	private static boolean printtokens;
-	private static boolean printASTFlag;
-	private static boolean libraryFlag = false;
+	private static boolean printASTFlag;        
+	private static boolean libraryFlag = false; 
+	private static boolean dumpSymTblFlag = false;  
 	private static String libraryFile;
 	private static PrintWriter log = null;
 	private static PrintWriter mainState = null;
@@ -41,12 +44,34 @@ public class Compiler
 			}
 
 			// parse the library file if needed
-			if (libraryFlag){
-				parseFile(libraryFile);
-			}
-
+			ASTNode LibNode = null;
+			if (libraryFlag)
+				LibNode = parseFile(libraryFile);
+				
 			// Parse the input file
-			parseFile(args[0]);
+			ASTNode ProgNode = parseFile(args[0]);
+			
+			//////// creating the symbol table
+			//creating visitor 
+	        SymbolTableCreator symbolTableCreator = new SymbolTableCreator(args[0], LibNode);
+	        symbolTableCreator.setLibraryStatus(libraryFlag);
+	        //the visitor will build the symbol table based on the AST
+	        ProgNode.accept(symbolTableCreator);
+	        
+	        
+	        /// semantic checks
+	        SemanticChecker semanticChecker = new SemanticChecker();
+	        ProgNode.accept(semanticChecker);
+			
+	        /// print symbol table if needed
+            if (dumpSymTblFlag)
+            {
+                    System.out.println();
+                    System.out.println(ProgNode.getSymbolTable());
+                    System.out.println();
+                    System.out.println(TypeTable.Table.toString(args[0]));
+            }
+	        
 			
 		} catch (Exception e) {
 			System.out.print(e);
@@ -109,15 +134,19 @@ public class Compiler
 		}
 
 		if (argSet.contains("-debug")){
-			//printASTFlag = printtokens = true;
+
 			debugMode = true;
+		}
+		if (argSet.contains("-dump-symtab")){
+
+			dumpSymTblFlag = true;
 		}
 		else {
 			printtokens = false;
 		}
 	}
 
-	protected static void parseFile(String filename)
+	protected static ASTNode parseFile(String filename)
 			throws FileNotFoundException, Exception {
 		printToLog("\nParsing file: " + filename);
 
@@ -127,24 +156,28 @@ public class Compiler
 		parser.printTokens = printtokens;
 
 		Symbol parseSymbol = parser.parse();
+		
+		//this is for our internal debug
+		printToLog("\nFinished Parsing file: " + filename + "" +
+				"=================================================");
 
 		if ((parseSymbol!=null) && (parseSymbol.value!=null)) { // need both checks for "segfault" check
 		
 			System.out.println("Parsed " + filename + " successfully!");
 			ASTNode root = (ASTNode) parseSymbol.value;
-
 			// Pretty-print the program to System.out if needed
 			if (printASTFlag ){
 				//input file printer
 				PrettyPrinter printer = new PrettyPrinter(filename);
 				System.out.println(printer.visit(root));
 			}
-		} 
-		else {
+			return root;
+		
+		} else {
 			System.out.println("Parsing of " + filename + " failed.");
+			return null;
 		}
-		printToLog("\nFinished Parsing file: " + filename + "" +
-				"=================================================");
+
 	}
 
 	public static void printUsage(){

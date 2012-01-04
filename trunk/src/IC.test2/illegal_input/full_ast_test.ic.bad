@@ -4,39 +4,48 @@ class Test {
 class Test2 extends Test {
 	}
 	
-class Jhgsdhjgdk kjhasfkj kjasgkjfgs {
 
-void method() {}
+class Jhgsdhjgdk { //error
+
+void method() {       x=3;                  }
+
 int x;
+//hgfhg;
+
 }
 
-	
-class Test2 ext t {
+class Test2 {
 	}
+	
+
 
 class Test2 extends Test {
 		int x;
-		int y
-		int z;
-
+		int y;
+		int z; //no comma
+		void method() {}
 	
 	}
 	
 class Test3 extends Test {
-	int a;
-	int b, c;
+	int x; //error
+	x =3;
+	int a,x;
+	int b, c; //this is not an error
 	int[] d;
 	String s;
 	Boolean b;
 	Test t;
 	
 	static Test method_1(){}
-	
-	int method_2(int a, String b){
+
+	int method_2(int a, string b){
 		int i = 0;
 	}
 	
 	int n;
+	
+	void method_13(String [] st) {}
 	
 	void method_3(String [] st){
 		if (a==3)
@@ -96,7 +105,7 @@ class Test3 extends Test {
 	//================================== errors -
 	
 	if (true)
-		int x;
+		x=3;//int x;
 		
 	
 	
@@ -118,3 +127,4 @@ class Test3 extends Test {
 }
 
 //class Test3 extends Test extends Test {}
+

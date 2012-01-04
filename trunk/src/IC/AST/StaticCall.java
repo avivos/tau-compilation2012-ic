@@ -9,7 +9,9 @@ import java.util.List;
  */
 public class StaticCall extends Call {
 
-	private String className;
+	private String className; //new
+    public StaticMethod staticMethod;//new
+
 
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
