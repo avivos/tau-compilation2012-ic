@@ -15,60 +15,63 @@ public class Symbol
                 Field("Field"),
                 ReturnType("Return type");
                 
-                private String m_Desc;
+                private String sType;
                 
-                private SymbolKind(String desc)
+                private SymbolKind(String type)
                 {
-                        m_Desc = desc;
+                        sType = type;
                 }
                 
                 public String toString()
                 {
-                        return m_Desc;
+                        return sType;
                 }
         }
         
-        protected String m_Name;
-        protected SymbolKind m_Kind;
-        protected Type m_Type;
-        protected ASTNode m_Node;
+        protected String symName;
+        protected SymbolKind symKind;
+        protected Type symType;
+        protected ASTNode symNode;
         
         public Symbol(String name, ASTNode node, SymbolKind kind, Type type)
         {
-                m_Name = name;
-                m_Kind = kind;
-                m_Type = type;
-                m_Node = node;
+                symName = name;
+                symKind = kind;
+                symType = type;
+                symNode = node;
         }
         
         public String getName()
         {
-                return m_Name;
+                return symName;
         }
         
         public SymbolKind getKind()
         {
-                return m_Kind;
+                return symKind;
         }
         
         public Type getType()
         {
-                return m_Type;
+                return symType;
         }
         
         public ASTNode getNode()
         {
-                return m_Node;
+                return symNode;
         }
         
         @Override
         public String toString()
         {
-                if (m_Kind == SymbolKind.Class)
+                if (symKind == SymbolKind.Class)
                 {
-                        return String.format("%s: %s", m_Kind, m_Name);
+                        //return String.format("%s: %s", symKind, symName); 
+                	return symKind + ": " + symName; 
+                        		
                 }
                 
-                return String.format("%s: %s %s", m_Kind, m_Type, m_Name);
+                //return String.format("%s: %s %s", symKind, symType, symName);
+                return symKind+": "+symType+" "+symName;
         }
 }

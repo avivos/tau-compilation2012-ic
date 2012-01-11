@@ -39,5 +39,13 @@ class B extends A {
 class C {
   static void main(string[] args) {
     A[][] a;
+    A[][] b;
   }
+}
+
+class D {
+    int j;
+
+    void vfun(string a, int max, int val) {
+    }
 }
