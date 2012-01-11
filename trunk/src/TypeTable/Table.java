@@ -72,7 +72,7 @@ public class Table {
                 t = uniqueClassTypes.get(typeName);
         } 
         if (t == null) {
-                //throw new SemanticException("Unrecognized type", nodeType);
+                //throw new SemanticException("Unrecognized type", nodeType); EREZ
                 return null;
         }
         
@@ -86,7 +86,7 @@ public class Table {
                 }
                 return arr;
                  
-                //return arrayType(t);
+                //return arrayType(t); EREZ
         } 
         else {
                 return t;
@@ -112,13 +112,12 @@ public class Table {
     public static ClassType addClassType(ICClass icClass) {
         ClassType  ct = uniqueClassTypes.get(icClass.getName());
         if (ct != null){ 
-               //throw new SemanticException("Class was already defined", icClass);
                 return ct;
         }
         
         ClassType superClass = null;
         if (icClass.hasSuperClass()) {
-                        superClass = uniqueClassTypes.get(icClass.getSuperClassName());
+                superClass = uniqueClassTypes.get(icClass.getSuperClassName());
                         
                 if (superClass == null) {
                         throw new SemanticError("Super class was never defined", icClass);
@@ -158,6 +157,7 @@ public class Table {
         }
         
         ClassType newClass = new ClassType(superClass, icClass,initialize);
+        
         uniqueClassTypes.put(icClass.getName(), newClass);
         
         return newClass;
@@ -192,11 +192,14 @@ public class Table {
         MethodType mt = new MethodType(returnType,paramTypes);
         String key = mt.toString();
         
-        MethodType mt2 = uniqueMethodTypes.get(key);
-        if (mt2 == null) {
+        MethodType mt_predef = uniqueMethodTypes.get(key);
+		//this code checks if the entry was already defined 
+        if (mt_predef == null) {
                 uniqueMethodTypes.put(key, mt);
                 return mt;
-        } else return mt2;
+        } else {
+        	Type.counter--; //this reduces the type index, because it was predefined
+        	return mt_predef;}
         
     }
     

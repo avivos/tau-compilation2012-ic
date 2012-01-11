@@ -13,8 +13,8 @@ import IC.AST.PrettyPrinter;
 import java_cup.runtime.*;
 
 import IC.Parser.Lexer;
-import Traversal.SemanticChecker;
-import Traversal.SymbolTableCreator;
+import Visitors.SemanticChecker;
+import Visitors.SymbolTableCreator;
 
 
 public class Compiler

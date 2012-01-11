@@ -1,4 +1,4 @@
-package Traversal;
+package Visitors;
 
 
 import java.util.List;
@@ -52,7 +52,7 @@ import SymbolTable.SymbolMethod;
 import SymbolTable.SymbolTable;
 import SymbolTable.Symbol.SymbolKind;
 import SymbolTable.SymbolMethod.MethodKind;
-import SymbolTable.SymbolTable.SymbolTableKind;
+import SymbolTable.SymbolTable.TableKind;
 import TypeTable.ClassType;
 import TypeTable.MethodType;
 import TypeTable.Type;
@@ -94,7 +94,7 @@ public class SymbolTableCreator implements Visitor
         @Override
         public Object visit(Program program) throws SemanticError 
         {
-                SymbolTable globalSymbolTable = new SymbolTable(m_FileName, SymbolTableKind.Global);
+                SymbolTable globalSymbolTable = new SymbolTable(m_FileName, TableKind.Global);
                 program.setSymbolTable(globalSymbolTable);
                 
                 if (m_LibraryNode != null)
@@ -166,7 +166,7 @@ public class SymbolTableCreator implements Visitor
         private void verifyMemberMethod(ICClass icClass, Method node, String name)
         {
                 SymbolTable symbolTable = icClass.getSymbolTable();
-                Symbol existingSym = symbolTable.lookupLocal(name);
+                Symbol existingSym = symbolTable.lookupScope(name);
                 
                 if (existingSym != null &&
                         existingSym.getKind() == SymbolKind.Method)
@@ -206,7 +206,7 @@ public class SymbolTableCreator implements Visitor
         @Override
         public Object visit(ICClass icClass)  
         {
-                SymbolTable symbolTable = new SymbolTable(icClass.getName(), SymbolTableKind.Class);
+                SymbolTable symbolTable = new SymbolTable(icClass.getName(), TableKind.Class);
                 symbolTable.setParent(icClass.getSymbolTable());
                 icClass.setSymbolTable(symbolTable);
                 
@@ -266,7 +266,7 @@ public class SymbolTableCreator implements Visitor
         public Object visit(Method method, MethodKind methodKind) 
         {
                 
-                SymbolTable symbolTable = new SymbolTable(method.getName(), SymbolTableKind.Method);
+                SymbolTable symbolTable = new SymbolTable(method.getName(), TableKind.Method);
                 method.setSymbolTable(symbolTable);
                 
                 Type returnType = TypeTable.Table.getType(method.getType());
@@ -293,7 +293,7 @@ public class SymbolTableCreator implements Visitor
                         formal.setSymbolTable(symbolTable);
                         formal.accept(this);
                         
-                        if (symbolTable.lookupLocal(formal.getName()) != null)
+                        if (symbolTable.lookupScope(formal.getName()) != null)
                                 throw new SemanticError("Variable already defined in this scope", formal);
                         
                         Type type = TypeTable.Table.getType(formal.getType());
@@ -325,7 +325,7 @@ public class SymbolTableCreator implements Visitor
         @Override
         public Object visit(StatementsBlock statementsBlock) 
         {
-                SymbolTable symbolTable = new SymbolTable("block." + statementsBlock.getLine(), SymbolTableKind.Block);
+                SymbolTable symbolTable = new SymbolTable("block." + statementsBlock.getLine(), TableKind.Block);
                 //statementsBlock.setSymbolTable(symbolTable);
                 
                 for (Statement statement : statementsBlock.getStatements())
@@ -497,7 +497,7 @@ public class SymbolTableCreator implements Visitor
         @Override
         public Object visit(LocalVariable localVariable) 
         {
-                Symbol existingSym = localVariable.getSymbolTable().lookupLocal(localVariable.getName());
+                Symbol existingSym = localVariable.getSymbolTable().lookupScope(localVariable.getName());
                 
                 if (existingSym != null &&
                         existingSym.getNode() != localVariable)

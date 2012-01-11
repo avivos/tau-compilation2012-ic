@@ -6,7 +6,7 @@ import TypeTable.Type;
 
 public class SymbolMethod extends Symbol 
 {
-        private MethodKind m_MethodKind;
+        private MethodKind methodKind;
         
         public enum MethodKind
         {
@@ -14,37 +14,38 @@ public class SymbolMethod extends Symbol
                 Static("Static"),
                 Library("Static");
                 
-                private String m_Desc;
+                private String mType;
                 
-                private MethodKind(String desc)
+                private MethodKind(String type)
                 {
-                        m_Desc = desc;
+                        mType = type;
                 }
                 
                 public String toString()
                 {
-                        return m_Desc;
+                        return mType;
                 }
         }
         
-        public SymbolMethod(String name, ASTNode node, SymbolKind kind, Type type, MethodKind methodKind) 
+        public SymbolMethod(String name, ASTNode node, SymbolKind kind, Type type, MethodKind mKind) 
         {
                 super(name, node, kind, type);
                 
-                m_MethodKind = methodKind;
+                methodKind = mKind;
         }
         
         public MethodKind getMethodKind()
         {
-                return m_MethodKind;
+                return methodKind;
         }
         
         @Override
         public String toString()
         {
-                return String.format("%s method: %s %s",
-                                                         m_MethodKind,
-                                                         m_Name,
-                                                         m_Type);
+               // return String.format("%s method: %s %s",
+               //                                          methodKind,
+               //                                          symName,
+               //                                          symType);
+        	return methodKind+" method: "+symName+" "+symType;
         }
 }
