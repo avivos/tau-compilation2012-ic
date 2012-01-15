@@ -7,8 +7,6 @@ package IC.AST;
  */
 public class LocalVariable extends Statement {
 
-    public int id;//new
-
 	private Type type;
 
 	private String name;

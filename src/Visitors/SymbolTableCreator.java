@@ -4,6 +4,15 @@ package Visitors;
 import java.util.List;
 import java.util.Map;
 
+import SymbolTable.Symbol;
+import SymbolTable.SymbolMethod;
+import SymbolTable.SymbolTable;
+import SymbolTable.Symbol.SymbolKind;
+import SymbolTable.SymbolMethod.MethodKind;
+import SymbolTable.SymbolTable.TableKind;
+import TypeTable.ClassType;
+import TypeTable.MethodType;
+import TypeTable.Type;
 
 import IC.SemanticError;
 import IC.AST.ASTNode;
@@ -47,214 +56,175 @@ import IC.AST.VirtualCall;
 import IC.AST.VirtualMethod;
 import IC.AST.Visitor;
 import IC.AST.While;
-import SymbolTable.Symbol;
-import SymbolTable.SymbolMethod;
-import SymbolTable.SymbolTable;
-import SymbolTable.Symbol.SymbolKind;
-import SymbolTable.SymbolMethod.MethodKind;
-import SymbolTable.SymbolTable.TableKind;
-import TypeTable.ClassType;
-import TypeTable.MethodType;
-import TypeTable.Type;
+
 
 public class SymbolTableCreator implements Visitor 
 {
-        private ASTNode m_LibraryNode;
-        private String m_FileName;
+        private ASTNode libraryNode;
+        private String fileName;
+        int mains = 0;
+        boolean libraryFlag;
+        int variables = 0;
         
-        int mainCounter = 0;
-        boolean libraryStatus;
-        int varCounter = 0;
-        
-        public void setLibraryStatus(boolean status)
+        public void setLibraryFlag(boolean flag)
         {
-                libraryStatus = status;
+                libraryFlag = flag;
         }
         
-        public SymbolTableCreator(String fileName, ASTNode libraryNode)
+        public SymbolTableCreator(String fname, ASTNode library)
         {
-                m_LibraryNode = libraryNode;
-                m_FileName = fileName;
+                libraryNode = library;
+                fileName = fname;
         }
         
-        private void handleLibrary(Program program)
+        private void addLibraryToProgram(Program program)
         {
-                SymbolTable libSymbolTable = m_LibraryNode.getSymbolTable();
-                Symbol libSym = libSymbolTable.lookup("Library", program);
-                
+                SymbolTable librarySymbolTable = libraryNode.getSymbolTable();
+                Symbol libSym = librarySymbolTable.lookupScope("Library");
                 if (libSym == null)
-                {
-                        throw new SemanticError("Can't locate library class", m_LibraryNode);
-                }
-                
+                        throw new SemanticError("Can't find library class in library file", libraryNode);
                 program.getSymbolTable().insert(libSym);
                 libSym.getNode().getSymbolTable().setParent(program.getSymbolTable());
         }
         
-        @Override
-        public Object visit(Program program) throws SemanticError 
+        private void checkDuplicateFields(ICClass cls, ASTNode node, String name)
         {
-                SymbolTable globalSymbolTable = new SymbolTable(m_FileName, TableKind.Global);
-                program.setSymbolTable(globalSymbolTable);
-                
-                if (m_LibraryNode != null)
-                {
-                        handleLibrary(program);
-                }
-                
-                for (ICClass icClass : program.getClasses())
-                {
-                        String superClassName = icClass.getSuperClassName();
-                        
-                        SymbolTable classParentSymbolTable = null;
-                        
-                        if (superClassName != null)
-                        {
-                                Symbol superSym = globalSymbolTable.lookup(superClassName, icClass);
-                                if (superSym == null)
-                                {
-                                        throw new SemanticError("Super class not defined", icClass);
-                                }
-
-                                classParentSymbolTable = superSym.getNode().getSymbolTable();
-                        }
-                        else
-                        {
-                                classParentSymbolTable = globalSymbolTable;
-                        }
-                        
-                        ClassType classType = TypeTable.Table.addClassType(icClass,true);
-                        
-                        icClass.setSymbolTable(classParentSymbolTable);
-                        SymbolTable symbolTableChild = (SymbolTable)icClass.accept(this);
-                        
-                        symbolTableChild.setParent(classParentSymbolTable);
-
-                        Symbol sym = new Symbol(icClass.getName(),  
-                                                                        icClass,
-                                                                        SymbolKind.Class,
-                                                                        classType);
-                        
-                        globalSymbolTable.insert(sym);
-                        
-                }
-                if (libraryStatus ==  true && mainCounter > 0)
-                        throw new SemanticError("The Library should not contain main function ", program);
-                        
-                if (mainCounter  ==  0 && libraryStatus ==  false )
-                        throw new SemanticError("The program contains no main function ", program);
-        
-                for (Map.Entry<String, ClassType> pairs : TypeTable.Table.getClassList().entrySet())
-                {
-                        if (((ClassType) pairs.getValue()).initFlag == false)
-                                throw new SemanticError("Using undefined class", ((ClassType) pairs.getValue()).node);
-                }       
-                return globalSymbolTable;
-        }
-        
-        private void verifyMemberField(ICClass icClass, ASTNode node, String name)
-        {
-                SymbolTable symbolTable = icClass.getSymbolTable();
-                Symbol existingSym = symbolTable.lookup(name, node);
-                
-                if (existingSym != null &&
-                        existingSym.getKind() == SymbolKind.Field )
-                {
+                Symbol sym = cls.getSymbolTable().lookup(name, node);
+                if (sym != null && sym.getKind() == SymbolKind.Field )
                         throw new SemanticError("Field with same name already defined", node);
-                }
-        }
-        private void verifyMemberMethod(ICClass icClass, Method node, String name)
-        {
-                SymbolTable symbolTable = icClass.getSymbolTable();
-                Symbol existingSym = symbolTable.lookupScope(name);
-                
-                if (existingSym != null &&
-                        existingSym.getKind() == SymbolKind.Method)
-                {
-                        throw new SemanticError("Method with same name or sign already defined", node);
-                }
-                
-                existingSym = symbolTable.lookup(name, node);
-                
-                if (existingSym != null && existingSym.getKind() == SymbolKind.Method &&
-                                        (!compareList(((Method)existingSym.getNode()).getFormals(),node.getFormals())||
-                                                        (!node.getType().getName().equalsIgnoreCase(((Method)existingSym.getNode()).getType().getName()))
-                                                        ||(node.getType().getDimension()!= ((Method)existingSym.getNode()).getType().getDimension())))
-                {
-                        throw new SemanticError("overloading Method is not allowed",node);
-                }
         }
         
-         boolean compareList(List<Formal> list1, List<Formal> list2)
+        private void checkDuplicateMethods(ICClass cls, Method node, String name)
         {
-                if (list1.size() == list2.size())
-                {
-                        for (int i = 0; i < list1.size() ; i++)
-                        {
-                                if ( list1.get(i).getType().getName().equals(((Formal) list2.get(i)).getType().getName()) &&  
-                                                list1.get(i).getType().getDimension() == list2.get(i).getType().getDimension())
-                                        continue;
-                                else
-                                        return false;
+                Symbol sym = cls.getSymbolTable().lookupScope(name);
+                if (sym != null && sym.getKind() == SymbolKind.Method)
+                        throw new SemanticError("Method with same name was already defined ", node);
+                
+                sym = cls.getSymbolTable().lookup(name, node);
+                
+                if (sym != null && sym.getKind() == SymbolKind.Method )
+                	if	(!compareFormals(((Method)sym.getNode()).getFormals(),node.getFormals()) //compare formals
+                          ||(!node.getType().getName().equalsIgnoreCase(((Method)sym.getNode()).getType().getName())) //compare return val
+                          ||(node.getType().getDimension()!= ((Method)sym.getNode()).getType().getDimension())) //compare dim
+                		throw new SemanticError("overloading Method is not allowed ",node);
+        }
+        
+        private boolean compareFormals(List<Formal> list1, List<Formal> list2)
+        {
+                if (list1.size() == list2.size()){
+                        for (int i = 0; i < list1.size() ; i++){
+                                if ( !(list1.get(i).getType().getName().equals(((Formal) list2.get(i)).getType().getName())) ||  
+                                                !(list1.get(i).getType().getDimension() == list2.get(i).getType().getDimension()))
+                                	return false;
+                                        
                         }
                         return true;
                 }
                 return false;
         }
+        
+        @Override
+        public Object visit(Program node) throws SemanticError 
+        {
+                SymbolTable globalTable = new SymbolTable(fileName, TableKind.Global);
+                node.setSymbolTable(globalTable);
+                if (libraryNode != null)
+                        addLibraryToProgram(node);
+          
+                for (ICClass cls : node.getClasses())
+                {
+                        String superName = cls.getSuperClassName();
+                        SymbolTable superSymbolTable = null;
+                        if (superName != null)
+                        {
+                                Symbol superSymbol = globalTable.lookup(superName, cls);
+                                if (superSymbol == null)
+                                        throw new SemanticError("Super class is undefined ", cls);
+                                
+                                superSymbolTable = superSymbol.getNode().getSymbolTable();
+                        }
+                        else
+                           superSymbolTable = globalTable;
+                        
+                        ClassType classT = TypeTable.Table.addClassTypeDef(cls);
+                        cls.setSymbolTable(superSymbolTable);
+                        //recursive traversal
+                        SymbolTable symbolTableChild = (SymbolTable)cls.accept(this);
+                        
+                        //link the 2 tables (program-class)
+                        symbolTableChild.setParent(superSymbolTable);
+                        Symbol sym = new Symbol(cls.getName(),cls,SymbolKind.Class,classT);
+                        globalTable.insert(sym);
+                        
+                }
+                
+                if (libraryFlag ==  true && mains > 0)
+                        throw new SemanticError("The Library should not contain main function ", node);
+                        
+                if (mains  ==  0 && libraryFlag ==  false )
+                        throw new SemanticError("The program contains no main function ", node);
+        
+                for (Map.Entry<String, ClassType> pairs : TypeTable.Table.getClassList().entrySet())
+                {
+                        if (((ClassType) pairs.getValue()).initFlag == false)
+                                throw new SemanticError("Undefined class used ", ((ClassType) pairs.getValue()).node);
+                }       
+                return globalTable;
+        }
+        
+
 
 
         @Override
-        public Object visit(ICClass icClass)  
+        public Object visit(ICClass node)  
         {
-                SymbolTable symbolTable = new SymbolTable(icClass.getName(), TableKind.Class);
-                symbolTable.setParent(icClass.getSymbolTable());
-                icClass.setSymbolTable(symbolTable);
-                
-                for (Field field : icClass.getFields())
-                {
-                        verifyMemberField(icClass, field, field.getName());
-                        
-                        field.setSymbolTable(symbolTable);
+                SymbolTable classSymTable = new SymbolTable(node.getName(), TableKind.Class);
+                //AST linkage
+                classSymTable.setParent(node.getSymbolTable());
+                node.setSymbolTable(classSymTable);
+                //fields
+                for (Field field : node.getFields()){
+                        checkDuplicateFields(node, field, field.getName()); //throws error if already exist
+                        field.setSymbolTable(classSymTable);
+                        //recursive traversal
                         field.accept(this);
                         
-                        Type type = TypeTable.Table.getType(field.getType());
-                        if (type == null)
+                        Type fieldType = TypeTable.Table.getType(field.getType());
+                        //if undefined type
+                        if (fieldType == null)
                            {
-                            ICClass c = new ICClass(field.getLine(), field.getType().getName(), null, null);
-                            type =  TypeTable.Table.addClassType(c);
+                            ICClass cls = new ICClass(field.getLine(), field.getType().getName(), null, null);
+                            fieldType =  TypeTable.Table.addClassType(cls);
                           }
-                        Symbol sym = new Symbol(field.getName(), 
-                                                                        field,
-                                                                        SymbolKind.Field,
-                                                                        type);
-                        
-                        symbolTable.insert(sym);
+                        Symbol sym = new Symbol(field.getName(),field,SymbolKind.Field,fieldType);
+                        classSymTable.insert(sym);
                 }
-                
-                for (Method method : icClass.getMethods())
+                //methods
+                for (Method method : node.getMethods())
                 {
-                        verifyMemberMethod(icClass, method, method.getName());
+                        checkDuplicateMethods(node, method, method.getName());
                         
-                        MethodType type = TypeTable.Table.methodType(method);
+                        MethodType mtype = TypeTable.Table.methodType(method);
                         
-                        method.setSymbolTable(symbolTable);
+                        method.setSymbolTable(classSymTable);
+                        //recursive traversal
                         SymbolTable symbolTableChild = (SymbolTable)method.accept(this);
-                        symbolTableChild.setParent(symbolTable);
+                        symbolTableChild.setParent(classSymTable);
                         
-                        MethodKind kind = method instanceof StaticMethod ? MethodKind.Static
-                                                                : method instanceof VirtualMethod ? MethodKind.Virtual :
-                                                                        MethodKind.Library;
+                        MethodKind kind;
+                        if (method instanceof StaticMethod)
+                        	kind = MethodKind.Static;
+                        else
+                        	if (method instanceof VirtualMethod)
+                        		kind = MethodKind.Virtual;
+                        	else
+                        		kind = MethodKind.Library;
                         
-                        Symbol sym = new SymbolMethod(method.getName(), 
-                                                                                  method,
-                                                                                  SymbolKind.Method,
-                                                                                  type,
-                                                                                  kind);
-                        
-                        symbolTable.insert(sym);
+                        Symbol sym = new SymbolMethod(method.getName(),method,SymbolKind.Method,mtype,kind);
+                        classSymTable.insert(sym);
                 }
                 
-                return symbolTable;
+                return classSymTable;
         }
 
         @Override
@@ -263,93 +233,79 @@ public class SymbolTableCreator implements Visitor
                 return null;
         }
         
-        public Object visit(Method method, MethodKind methodKind) 
+        public Object visit(Method m, MethodKind mKind) 
         {
+                SymbolTable methodlTable = new SymbolTable(m.getName(), TableKind.Method);
+                m.setSymbolTable(methodlTable);
+                Type retType = TypeTable.Table.getType(m.getType());
                 
-                SymbolTable symbolTable = new SymbolTable(method.getName(), TableKind.Method);
-                method.setSymbolTable(symbolTable);
+                if ( m.getName().equals("main") && mKind  == MethodKind.Static  &&
+                        retType ==  TypeTable.Table.voidType  &&
+                        m.getFormals().size() == 1 && 
+                        m.getFormals().get(0).getType().getName().equals("string") &&
+                        m.getFormals().get(0).getType().getDimension() == 1 )
+                        mains++; // add a main to counter
                 
-                Type returnType = TypeTable.Table.getType(method.getType());
+                if (mains > 1)
+                        throw new SemanticError("The program contains more than one main", m);
                 
-                if ( method.getName().equals("main") && methodKind  == MethodKind.Static  &&
-                        returnType ==  TypeTable.Table.voidType  &&
-                        method.getFormals().size() == 1 && method.getFormals().get(0).getType().getDimension() == 1 &&
-                        method.getFormals().get(0).getType().getName().equals("string"))
-                        mainCounter ++;
-                
-                if (mainCounter > 1)
-                        throw new SemanticError("The program contains more than one main", method);
-                
-                Symbol returnSym = new Symbol("-method",
-                                                                method,
-                                                                SymbolKind.ReturnType,
-                                                                returnType);
-                
-                symbolTable.insert(returnSym);
-                
-                
-                for (Formal formal : method.getFormals())
+                Symbol retSym = new Symbol("-return-type",m,SymbolKind.ReturnType,retType);
+                methodlTable.insert(retSym);
+                //params
+                for (Formal formal : m.getFormals())
                 {
-                        formal.setSymbolTable(symbolTable);
-                        formal.accept(this);
-                        
-                        if (symbolTable.lookupScope(formal.getName()) != null)
-                                throw new SemanticError("Variable already defined in this scope", formal);
-                        
+                        formal.setSymbolTable(methodlTable); 
+                        if (methodlTable.lookupScope(formal.getName()) != null)
+                                throw new SemanticError("A parameter with the same name was already defined", formal);
                         Type type = TypeTable.Table.getType(formal.getType());
-                        
-                        Symbol sym = new Symbol(formal.getName(),
-                                                                        formal,
-                                                                        SymbolKind.Parameter,
-                                                                        type);
-                        
-                        symbolTable.insert(sym);
+                        Symbol sym = new Symbol(formal.getName(),formal,SymbolKind.Parameter,type);
+                        //add it to method table
+                        methodlTable.insert(sym);
                 }
-                
-                for (Statement statement : method.getStatements())
+                //func body
+                for (Statement stmt : m.getStatements())
                 {
-                        statement.setSymbolTable(symbolTable);
-                        Object result = statement.accept(this);
+                        stmt.setSymbolTable(methodlTable);
+                        //recursive traversal (for statement blocks)
+                        Object block = stmt.accept(this);
                         
-                        if (result != null)
-                        {
-                                SymbolTable symbolTableChild = (SymbolTable)result;
-                                symbolTableChild.setParent(symbolTable);
+                        //if stmt = statement block
+                        if (block != null){
+                                SymbolTable blockScopeTable = (SymbolTable)block;
+                                blockScopeTable.setParent(methodlTable);
                         }
                 }
 
-                return symbolTable;
+                return methodlTable;
         }
         
 
         @Override
-        public Object visit(StatementsBlock statementsBlock) 
+        public Object visit(StatementsBlock stmtBlock) 
         {
-                SymbolTable symbolTable = new SymbolTable("block." + statementsBlock.getLine(), TableKind.Block);
-                //statementsBlock.setSymbolTable(symbolTable);
+                SymbolTable blockTable = new SymbolTable("block-" + stmtBlock.getLine(), TableKind.Block);
                 
-                for (Statement statement : statementsBlock.getStatements())
+                for (Statement statement : stmtBlock.getStatements())
                 {
-                        statement.setSymbolTable(symbolTable);
-                        Object result = statement.accept(this);
-                        
-                        if (result != null)
-                        {
-                                SymbolTable symbolTableChild = (SymbolTable)result;
-                                symbolTableChild.setParent(symbolTable);
+                        statement.setSymbolTable(blockTable);
+                        //recursive traversal
+                        Object returnTable = statement.accept(this);
+                        if (returnTable != null){
+                                SymbolTable symbolTableChild = (SymbolTable)returnTable;
+                                symbolTableChild.setParent(blockTable);
                         }
                 }
-                
-                return symbolTable;
+                return blockTable;
         }
         
         @Override
         public Object visit(ExpressionBlock expressionBlock) 
         {
-                Expression expr = expressionBlock.getExpression();
-                expr.setSymbolTable(expressionBlock.getSymbolTable());
-                
-                return expr.accept(this);
+//                Expression expr = expressionBlock.getExpression();
+//                expr.setSymbolTable(expressionBlock.getSymbolTable());
+//                
+//                return expr.accept(this);
+        	return null;
         }
 
         @Override
@@ -388,73 +344,61 @@ public class SymbolTableCreator implements Visitor
         @Override
         public Object visit(Assignment assignment) 
         {
-                Expression expr = assignment.getAssignment();
-                expr.setSymbolTable(assignment.getSymbolTable());
-                expr.accept(this);
-                
+                Expression exp = assignment.getAssignment();
+                exp.setSymbolTable(assignment.getSymbolTable());
+                exp.accept(this);
                 Location location = assignment.getVariable();
                 location.setSymbolTable(assignment.getSymbolTable());
                 location.accept(this);
-                
                 return null;
         }
 
         @Override
-        public Object visit(CallStatement callStatement) 
+        public Object visit(CallStatement callStmt) 
         {
-                Call call = callStatement.getCall();
-                call.setSymbolTable(callStatement.getSymbolTable());
+                Call call = callStmt.getCall();
+                call.setSymbolTable(callStmt.getSymbolTable());
                 call.accept(this);
-                
                 return null;
         }
 
         @Override
-        public Object visit(Return returnStatement) 
+        public Object visit(Return returnStmt) 
         {
-                Expression expr = returnStatement.getValue();
-                
-                if (expr != null)
-                {
-                        expr.setSymbolTable(returnStatement.getSymbolTable());
-                        return expr.accept(this);
-                }
-                        
+                Expression exp = returnStmt.getValue();
+                if (exp != null){
+                        exp.setSymbolTable(returnStmt.getSymbolTable());
+                        return exp.accept(this);
+                }    
                 return null;
         }
 
         @Override
         public Object visit(If ifStatement) 
         {
-                // Condition
-                Expression exprCondition = ifStatement.getCondition();
-                exprCondition.setSymbolTable(ifStatement.getSymbolTable());
-                exprCondition.accept(this);
+                Expression exp = ifStatement.getCondition();
+                exp.setSymbolTable(ifStatement.getSymbolTable());
+                exp.accept(this);
                 
-                // Operation
-                Statement exprOpStatement = ifStatement.getOperation();
-                exprOpStatement.setSymbolTable(ifStatement.getSymbolTable());
-                
-                Object result = exprOpStatement.accept(this);
-                
-                if (result != null)
-                {
-                        SymbolTable symbolTableChild = (SymbolTable)result;
-                        symbolTableChild.setParent(ifStatement.getSymbolTable());
+                // "then"
+                Statement thenStmt = ifStatement.getOperation();
+                thenStmt.setSymbolTable(ifStatement.getSymbolTable());
+                Object thenTable = thenStmt.accept(this);
+                if (thenTable != null){
+                        SymbolTable symThenTable = (SymbolTable)thenTable;
+                        symThenTable.setParent(ifStatement.getSymbolTable());
                 }
                 
-                // Else Operation
+                // "else"
                 if (ifStatement.hasElse())
                 {
-                        Statement exprElseStatement = ifStatement.getElseOperation();
-                        exprElseStatement.setSymbolTable(ifStatement.getSymbolTable());
-                        
-                        Object resultElse = exprElseStatement.accept(this);
-                        
-                        if (result != null)
+                        Statement elseStmt = ifStatement.getElseOperation();
+                        elseStmt.setSymbolTable(ifStatement.getSymbolTable());
+                        Object elseTable = elseStmt.accept(this);
+                        if (thenTable != null)
                         {
-                                SymbolTable symbolTableChild = (SymbolTable)resultElse;
-                                symbolTableChild.setParent(ifStatement.getSymbolTable());
+                                SymbolTable symElseTable = (SymbolTable)elseTable;
+                                symElseTable.setParent(ifStatement.getSymbolTable());
                         }
                 }
                 
@@ -462,23 +406,18 @@ public class SymbolTableCreator implements Visitor
         }
 
         @Override
-        public Object visit(While whileStatement) 
+        public Object visit(While whileStmt) 
         {
-                // Condition
-                Expression exprCondition = whileStatement.getCondition();
-                exprCondition.setSymbolTable(whileStatement.getSymbolTable());
-                exprCondition.accept(this);
-                
-                // Operation
-                Statement exprOpStatement = whileStatement.getOperation();
-                exprOpStatement.setSymbolTable(whileStatement.getSymbolTable());
-                
-                Object result = exprOpStatement.accept(this);
-                
-                if (result != null)
-                {
-                        SymbolTable symbolTableChild = (SymbolTable)result;
-                        symbolTableChild.setParent(whileStatement.getSymbolTable());
+                Expression exp = whileStmt.getCondition();
+                exp.setSymbolTable(whileStmt.getSymbolTable());
+                exp.accept(this);
+                // loop
+                Statement loopStmt = whileStmt.getOperation();
+                loopStmt.setSymbolTable(whileStmt.getSymbolTable());
+                Object loopTable = loopStmt.accept(this);
+                if (loopTable != null){
+                        SymbolTable symLoopTable = (SymbolTable)loopTable;
+                        symLoopTable.setParent(whileStmt.getSymbolTable());
                 }
                 return null;
         }
@@ -495,34 +434,20 @@ public class SymbolTableCreator implements Visitor
 
 
         @Override
-        public Object visit(LocalVariable localVariable) 
+        public Object visit(LocalVariable var) 
         {
-                Symbol existingSym = localVariable.getSymbolTable().lookupScope(localVariable.getName());
-                
-                if (existingSym != null &&
-                        existingSym.getNode() != localVariable)
-                {
-                        throw new SemanticError("Variable already defined in this scope", localVariable);
+                Symbol tableSym = var.getSymbolTable().lookupScope(var.getName());
+                if (tableSym != null && tableSym.getNode() != var)
+                        throw new SemanticError("Variable with the same name was already defined", var);
+                Type type = TypeTable.Table.getType(var.getType());
+                Symbol varSym = new Symbol(var.getName(),var,SymbolKind.Variable,type);
+                var.getSymbolTable().insert(varSym);
+                //handle assignment declaration
+                Expression assgV = var.getInitValue();                
+                if (assgV != null){
+                        assgV.setSymbolTable(var.getSymbolTable());
+                        assgV.accept(this);
                 }
-                
-                Type type = TypeTable.Table.getType(localVariable.getType());
-                
-                Symbol sym = new Symbol(localVariable.getName(),
-                                                                localVariable,
-                                                                SymbolKind.Variable,
-                                                                type);
-                
-                localVariable.getSymbolTable().insert(sym);
-                localVariable.id = varCounter++;
-                
-                Expression initValue = localVariable.getInitValue();
-                
-                if (initValue != null)
-                {
-                        initValue.setSymbolTable(localVariable.getSymbolTable());
-                        initValue.accept(this);
-                }
-                
                 return null;
         }
 
@@ -530,12 +455,10 @@ public class SymbolTableCreator implements Visitor
         @Override
         public Object visit(VariableLocation location) 
         {
-                Expression exprLocation = location.getLocation();
-                
-                if (exprLocation != null)
-                {
-                        exprLocation.setSymbolTable(location.getSymbolTable());
-                        exprLocation.accept(this);
+                Expression expLocation = location.getLocation();
+                if (expLocation != null){
+                        expLocation.setSymbolTable(location.getSymbolTable());
+                        expLocation.accept(this);
                 }
                 
                 return null;
@@ -544,22 +467,20 @@ public class SymbolTableCreator implements Visitor
         @Override
         public Object visit(ArrayLocation location) 
         {
-                Expression exprArray = location.getArray();
-                exprArray.setSymbolTable(location.getSymbolTable());
-                exprArray.accept(this);
-                
-                Expression exprIndex = location.getIndex();
-                exprIndex.setSymbolTable(location.getSymbolTable());
-                exprIndex.accept(this);
-                
+                Expression expArr = location.getArray();
+                expArr.setSymbolTable(location.getSymbolTable());
+                expArr.accept(this);
+                // Arr[i]
+                Expression i = location.getIndex();
+                i.setSymbolTable(location.getSymbolTable());
+                i.accept(this);
                 return null;
         }
 
         @Override
         public Object visit(StaticCall call) 
         {
-                for (Expression expr : call.getArguments())
-                {
+                for (Expression expr : call.getArguments()){
                         expr.setSymbolTable(call.getSymbolTable());
                         expr.accept(this);
                 }
@@ -570,20 +491,15 @@ public class SymbolTableCreator implements Visitor
         @Override
         public Object visit(VirtualCall call) 
         {
-                Expression location = call.getLocation();
-                
-                if (location != null)
-                {
-                        location.setSymbolTable(call.getSymbolTable());
-                        location.accept(this);
+                Expression loc = call.getLocation();
+                if (loc != null){
+                        loc.setSymbolTable(call.getSymbolTable());
+                        loc.accept(this);
                 }
-                
-                for (Expression expr : call.getArguments())
-                {
+                for (Expression expr : call.getArguments()){
                         expr.setSymbolTable(call.getSymbolTable());
                         expr.accept(this);
                 }
-                
                 return null;
         }
 
@@ -598,69 +514,64 @@ public class SymbolTableCreator implements Visitor
         }
 
         @Override
-        public Object visit(NewArray newArray) 
+        public Object visit(NewArray arr) 
         {
-                Expression expr = newArray.getSize();
-                expr.setSymbolTable(newArray.getSymbolTable());
-                expr.accept(this);
-                
+                Expression exp = arr.getSize();
+                exp.setSymbolTable(arr.getSymbolTable());
+                exp.accept(this);
                 return null;
         }
 
         @Override
         public Object visit(Length length) 
         {
-                Expression expr = length.getArray();
-                expr.setSymbolTable(length.getSymbolTable());
-                expr.accept(this);
-                
+                Expression exp = length.getArray();
+                exp.setSymbolTable(length.getSymbolTable());
+                exp.accept(this);
                 return null;
         }
 
-        public Object visit(BinaryOp binaryOp)
+        public Object visit(BinaryOp op)
         {
-                Expression expr1 = binaryOp.getFirstOperand();
-                expr1.setSymbolTable(binaryOp.getSymbolTable());
+                Expression expr1 = op.getFirstOperand();
+                expr1.setSymbolTable(op.getSymbolTable());
                 expr1.accept(this);
-                
-                Expression expr2 = binaryOp.getSecondOperand();
-                expr2.setSymbolTable(binaryOp.getSymbolTable());
+                Expression expr2 = op.getSecondOperand();
+                expr2.setSymbolTable(op.getSymbolTable());
                 expr2.accept(this);     
-                
                 return null;
         }
         
-        public Object visit(UnaryOp unaryOp)
+        public Object visit(UnaryOp op)
         {
-                Expression expr = unaryOp.getOperand();
-                expr.setSymbolTable(unaryOp.getSymbolTable());
-                expr.accept(this);
-                
+                Expression exp = op.getOperand();
+                exp.setSymbolTable(op.getSymbolTable());
+                exp.accept(this);
                 return null;
         }
         
         @Override
-        public Object visit(MathBinaryOp binaryOp) 
+        public Object visit(MathBinaryOp op) 
         {
-                return visit((BinaryOp)binaryOp);
+                return visit((BinaryOp)op);
         }
 
         @Override
-        public Object visit(LogicalBinaryOp binaryOp) 
+        public Object visit(LogicalBinaryOp op) 
         {
-                return visit((BinaryOp)binaryOp);
+                return visit((BinaryOp)op);
         }
 
         @Override
-        public Object visit(MathUnaryOp unaryOp) 
+        public Object visit(MathUnaryOp op) 
         {
-                return visit((UnaryOp)unaryOp);
+                return visit((UnaryOp)op);
         }
 
         @Override
-        public Object visit(LogicalUnaryOp unaryOp) 
+        public Object visit(LogicalUnaryOp op) 
         {
-                return visit((UnaryOp)unaryOp);
+                return visit((UnaryOp)op);
         }
 
         @Override

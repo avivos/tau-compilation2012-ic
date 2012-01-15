@@ -122,7 +122,7 @@ public class SemanticChecker implements Visitor {
                 Type returnVal = returnExpr != null ? (Type)returnStatement.getValue().accept(this)
                                                                                     : TypeTable.Table.voidType;
                 
-                Type formalReturnType = (Type) returnStatement.getSymbolTable().lookup("-method", returnStatement).getType();
+                Type formalReturnType = (Type) returnStatement.getSymbolTable().lookup("-return-type", returnStatement).getType();
                 
                 if (!returnVal.SubType(formalReturnType))
                 {
