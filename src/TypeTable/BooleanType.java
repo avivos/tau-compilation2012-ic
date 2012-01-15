@@ -1,6 +1,6 @@
 package TypeTable;
 
-public class BoolType extends Type {
+public class BooleanType extends Type {
 
         @Override
         public boolean SubType(Type type) {

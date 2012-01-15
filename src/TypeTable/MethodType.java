@@ -4,52 +4,41 @@ import java.util.List;
 
 public class MethodType extends Type {
 
+		List<Type> args;        
+        Type returnValue;
+
         
-        Type retType;
-        List<Type> argsType;
+        public MethodType(Type returnVal, List<Type> args) {
+                this.returnValue = returnVal;
+                this.args = args;
+        }
+
+        public Type getRetType() {
+                return returnValue;
+        }
         
-        public MethodType(Type retType, List<Type> argsType) {
-                this.retType = retType;
-                this.argsType = argsType;
+        public List<Type> getArgTypes()
+        {
+                return args;
         }
         
         @Override
         public boolean SubType(Type type) {
                 return (this==type);
         }
-        
-        
-        public Type getReturnType() {
-                return retType;
-        }
-        
-        public List<Type> getArgTypes()
-        {
-                return argsType;
-        }
-        
         @Override 
         public String toString()
         {
-                StringBuilder builder = new StringBuilder();
-                builder.append("{ ");
-                
-                for (int i = 0; i < argsType.size(); i++)
+                StringBuffer str = new StringBuffer();
+                str.append("{");
+                for (int i = 0; i < this.args.size(); i++)
                 {
-                        if (argsType.size() == 1 && 
-                                argsType.get(i) instanceof VoidType)
-                        {
-                                break;
-                        }
-                        
-                        builder.append(argsType.get(i));
-                        if (i != argsType.size() - 1)
-                                builder.append(", ");
+                    str.append(this.args.get(i));
+                    if (i != this.args.size()-1)
+                       str.append(", ");
                 }
-                
-                builder.append(" -> " + retType);
-                builder.append(" }");
-                
-                return builder.toString();
+                str.append(" -> " + this.returnValue);
+                str.append("}");
+                return str.toString();
         }
 }

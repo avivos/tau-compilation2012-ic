@@ -146,7 +146,7 @@ public class SymbolTableCreator implements Visitor
         
                 for (Map.Entry<String, ClassType> pairs : TypeTable.Table.getClassList().entrySet())
                 {
-                        if (((ClassType) pairs.getValue())._initialize == false)
+                        if (((ClassType) pairs.getValue()).initFlag == false)
                                 throw new SemanticError("Using undefined class", ((ClassType) pairs.getValue()).node);
                 }       
                 return globalSymbolTable;

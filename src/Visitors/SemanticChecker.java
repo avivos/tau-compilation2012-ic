@@ -139,7 +139,7 @@ public class SemanticChecker implements Visitor {
         public Object visit(If ifStatement) {
                 TypeTable.Type conditionType = (TypeTable.Type) ifStatement.getCondition().accept(this);
                 
-                if (conditionType.SubType(TypeTable.Table.boolType))
+                if (conditionType.SubType(TypeTable.Table.booleanType))
                 {
                         ifStatement.getOperation().accept(this);
                         
@@ -164,7 +164,7 @@ public class SemanticChecker implements Visitor {
         {
                 Type conditionType = (Type) whileStatement.getCondition().accept(this); 
 
-                if (!conditionType.SubType(TypeTable.Table.boolType))
+                if (!conditionType.SubType(TypeTable.Table.booleanType))
                 {
                         throw new SemanticError("Expected boolean argument for while", whileStatement);
                 }
@@ -289,7 +289,7 @@ public class SemanticChecker implements Visitor {
                         throw new SemanticError("Can't access index of non-array type", location);
                 }
                 
-                return ((ArrayType) type).getElemType();
+                return ((ArrayType) type).getObjType();
         }
 
         @Override
@@ -332,7 +332,7 @@ public class SemanticChecker implements Visitor {
                         }
                 }
                 
-                return methodType.getReturnType();
+                return methodType.getRetType();
         }
 
         @Override
@@ -385,7 +385,7 @@ public class SemanticChecker implements Visitor {
                         }
                 }
                 
-                return methodType.getReturnType();
+                return methodType.getRetType();
         }
 
         @Override
@@ -481,7 +481,7 @@ public class SemanticChecker implements Visitor {
                                 if ((left instanceof TypeTable.IntType) && 
                                         (right instanceof TypeTable.IntType))
                                 {
-                                        return TypeTable.Table.boolType;
+                                        return TypeTable.Table.booleanType;
                                 }
                         
                                 throw new SemanticError("Types not applicable for this operator", binaryOp);
@@ -495,7 +495,7 @@ public class SemanticChecker implements Visitor {
                                         left.SubType(right) ||
                                         right.SubType(left))
                                 {
-                                        return TypeTable.Table.boolType;
+                                        return TypeTable.Table.booleanType;
                                 }
                                 
                                 throw new SemanticError("Types not applicable for this operator", binaryOp);
@@ -506,9 +506,9 @@ public class SemanticChecker implements Visitor {
                         case LOR:
                         {
                                 if (left == right &&
-                                        left == TypeTable.Table.boolType)
+                                        left == TypeTable.Table.booleanType)
                                 {
-                                        return TypeTable.Table.boolType;
+                                        return TypeTable.Table.booleanType;
                                 }
                                 
                                 throw new SemanticError("Types not applicable for this operator", binaryOp);
@@ -539,9 +539,9 @@ public class SemanticChecker implements Visitor {
         public Object visit(LogicalUnaryOp unaryOp) {
                 TypeTable.Type  operandType = (Type) unaryOp.getOperand().accept(this);
                 
-                if ((unaryOp.getOperator() == UnaryOps.LNEG) && operandType.SubType(TypeTable.Table.boolType) )
+                if ((unaryOp.getOperator() == UnaryOps.LNEG) && operandType.SubType(TypeTable.Table.booleanType) )
                 {
-                        return TypeTable.Table.boolType;
+                        return TypeTable.Table.booleanType;
                 }
                 else
                 {
@@ -556,7 +556,7 @@ public class SemanticChecker implements Visitor {
                 {
                         case FALSE:
                         case TRUE:
-                                return TypeTable.Table.boolType;
+                                return TypeTable.Table.booleanType;
                         case STRING:
                                 return TypeTable.Table.stringType;
                         case NULL:

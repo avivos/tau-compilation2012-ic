@@ -1,14 +1,14 @@
 package TypeTable;
 
 public class ArrayType extends Type {
-        Type elemType;
+        Type objectT;
         
-        ArrayType(Type elemType) {
-                this.elemType = elemType;
+        ArrayType(Type obj) {
+                this.objectT = obj;
         }
 
-        public Type getElemType() {
-                return elemType;
+        public Type getObjType() {
+                return objectT;
         }
         
         @Override
@@ -24,6 +24,6 @@ public class ArrayType extends Type {
         @Override 
         public String toString()
         {
-                return elemType + "[]";
+                return objectT + "[]";
         }
 }

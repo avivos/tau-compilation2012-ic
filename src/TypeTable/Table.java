@@ -9,27 +9,26 @@ import IC.SemanticError;
 import IC.AST.*;
 
 public class Table {
-        
-    private static Map<String,ClassType> uniqueClassTypes = new LinkedHashMap<String,ClassType>();
-    private static Map<Type,ArrayType> uniqueArrayTypes = new LinkedHashMap<Type,ArrayType>();
-    
-    
-    private static Map<String,MethodType> uniqueMethodTypes = new LinkedHashMap<String,MethodType>();
-    private static Map<String,Type> uniquePrimitiveTypes = new LinkedHashMap<String,Type>();
-
-    /* these types are used to represent the IC primitives */
-    public static Type boolType = new BoolType();
+	
+	// primitives
+    public static Type booleanType = new BooleanType();
     public static Type intType = new IntType();
     public static Type stringType = new StringType();
-    public static Type voidType = new VoidType();
     public static Type nullType = new NullType();
+    public static Type voidType = new VoidType();
+        
+	//tables for the types
+    private static Map<String,ClassType> uniqueClassTypes = new LinkedHashMap<String,ClassType>();
+    private static Map<Type,ArrayType> uniqueArrayTypes = new LinkedHashMap<Type,ArrayType>();
+    private static Map<String,MethodType> uniqueMethodTypes = new LinkedHashMap<String,MethodType>();
+    private static Map<String,Type> uniquePrimitiveTypes = new LinkedHashMap<String,Type>();
 
     
     static 
     {
         /* put primitives in primitives list */
         uniquePrimitiveTypes.put("int", intType);
-        uniquePrimitiveTypes.put("boolean", boolType);
+        uniquePrimitiveTypes.put("boolean", booleanType);
         uniquePrimitiveTypes.put("null", nullType);
         uniquePrimitiveTypes.put("string", stringType);
         uniquePrimitiveTypes.put("void", voidType);
@@ -37,130 +36,124 @@ public class Table {
     
     public static String toString(String fileName)
     {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Type Table: " + fileName + "\n");
-        
+        StringBuffer str = new StringBuffer();
+        str.append("Type Table: " + fileName + "\n");
+        //print all primitives 
         for (Map.Entry<String, Type> entry : uniquePrimitiveTypes.entrySet())
-                builder.append("\t" + /*entry.getValue().hashCode()*/ entry.getValue().index + ": Primitive type: " + entry.getValue() + "\n");
-        
+                str.append("\t" + entry.getValue().index + ": Primitive type: " + entry.getValue() + "\n");
+        //classes
         for (Map.Entry<String, ClassType> entry : uniqueClassTypes.entrySet())
         {
-                builder.append("\t" + /*entry.getValue().hashCode()*/ entry.getValue().index + ": Class: " + entry.getValue());
-                
+                str.append("\t" + entry.getValue().index + ": Class: " + entry.getValue());
                 ClassType superType = entry.getValue().superType;
                 if (superType != null)
-                        builder.append(", Superclass ID: " + /*superType.hashCode() */ superType.index);
-                
-                builder.append("\n");
+                        str.append(", Superclass ID: " +superType.index);
+                str.append("\n");
         }
-        
+        //arrays
         for (Map.Entry<Type, ArrayType> entry : uniqueArrayTypes.entrySet())
-                builder.append("\t" + /*entry.getValue().hashCode()*/ entry.getValue().index + ": Array type: " + entry.getValue() + "\n");
-        
+                str.append("\t" +entry.getValue().index + ": Array type: " + entry.getValue() + "\n");
+        //methods
         for (Map.Entry<String, MethodType> entry : uniqueMethodTypes.entrySet())
-                builder.append("\t" + /*entry.getValue().hashCode()*/ entry.getValue().index + ": Method type: " + entry.getValue() + "\n");
+                str.append("\t" +entry.getValue().index + ": Method type: " + entry.getValue() + "\n");
         
-        return builder.toString();
+        return str.toString();
     }
     
     public static Type getType(IC.AST.Type nodeType) {
         
-        Type t;
+        Type type;
         String typeName = nodeType.getName();
-        t = uniquePrimitiveTypes.get(typeName);
-        if (t == null) {
-                t = uniqueClassTypes.get(typeName);
+        type = uniquePrimitiveTypes.get(typeName);
+        if (type == null) {
+                type = uniqueClassTypes.get(typeName);
         } 
-        if (t == null) {
-                //throw new SemanticException("Unrecognized type", nodeType); EREZ
+        if (type == null) {
                 return null;
         }
         
         if (nodeType.getDimension() > 0) {
-                
-                ArrayType arr = arrayType(t);
-                int i = nodeType.getDimension();
-                while (i>1) {
+                ArrayType arr = arrayType(type);
+                int dim = nodeType.getDimension();
+                while (dim>1) {
                         arr = arrayType(arr);
-                        --i;
+                        dim--;
                 }
                 return arr;
-                 
-                //return arrayType(t); EREZ
         } 
         else {
-                return t;
+                return type;
         }
         
     }
     
-     public static ArrayType arrayType(Type elemType) {
-        if (uniqueArrayTypes.containsKey(elemType)) {
-                // array type object already created return it
-                return uniqueArrayTypes.get(elemType);
+     public static ArrayType arrayType(Type obj) {
+        if (uniqueArrayTypes.containsKey(obj)) {
+                return uniqueArrayTypes.get(obj);
         }
         
         else {
-                // object doesnt exist create and return it
-                ArrayType arrt = new ArrayType(elemType);
-                uniqueArrayTypes.put(elemType,arrt);
-                return arrt;
+                ArrayType arrType = new ArrayType(obj);
+                uniqueArrayTypes.put(obj,arrType);
+                return arrType;
         }
     }
     
-    
     public static ClassType addClassType(ICClass icClass) {
-        ClassType  ct = uniqueClassTypes.get(icClass.getName());
-        if (ct != null){ 
-                return ct;
+        ClassType  classType = uniqueClassTypes.get(icClass.getName());
+        //if previously defined - return it
+        if (classType != null){ 
+                return classType;
         }
-        
+        //check if super was defined
         ClassType superClass = null;
         if (icClass.hasSuperClass()) {
                 superClass = uniqueClassTypes.get(icClass.getSuperClassName());
                         
                 if (superClass == null) {
-                        throw new SemanticError("Super class was never defined", icClass);
+                        throw new SemanticError("Super class wasn't defined", icClass);
                 }
         }
-        
+        //new class type
         ClassType newClass = new ClassType(superClass, icClass);
-        newClass._lineOfError = icClass.getLine();
-        uniqueClassTypes.put(icClass.getName(), newClass);
-        
+        newClass.useLine = icClass.getLine();
+        uniqueClassTypes.put(icClass.getName(), newClass); 
         return newClass;
     }
     
-    public static ClassType addClassType(ICClass icClass, boolean initialize) {
+    public static ClassType addClassType(ICClass icClass, boolean init) {
+    	//the class already exist
         if (uniqueClassTypes.containsKey(icClass.getName()))
         {
-                 ClassType ct = uniqueClassTypes.get(icClass.getName());
-                 if (ct._initialize == true )
-                {
-                        throw new SemanticError("Class was already defined", icClass);
-                }
-                else 
-                {
-               ct._initialize = true;
-               ct.node = icClass;
-               return ct;
-                }
+            ClassType classType = uniqueClassTypes.get(icClass.getName());
+            
+            //if this was previously defined
+            if (classType.initFlag == true )
+                 throw new SemanticError("Class was already defined", icClass);
+            else 
+            {
+            	//now init for previously USED but not defined
+               classType.initFlag = true;
+               classType.node = icClass;
+               return classType;
+            }
         }
+        else
+        {
+        	ClassType superClass = null;
+        	if (icClass.hasSuperClass()) {
+        		superClass = uniqueClassTypes.get(icClass.getSuperClassName());
+        		if (superClass == null || superClass.initFlag == false) {
+        			throw new SemanticError("Super class was never defined", icClass);
+        		}
+        	}
 
-        ClassType superClass = null;
-        if (icClass.hasSuperClass()) {
-                        superClass = uniqueClassTypes.get(icClass.getSuperClassName());
-                        
-                if (superClass == null || superClass._initialize == false) {
-                        throw new SemanticError("Super class was never defined", icClass);
-                }
+        	ClassType newClass = new ClassType(superClass, icClass,init);
+
+        	uniqueClassTypes.put(icClass.getName(), newClass);
+
+        	return newClass;
         }
-        
-        ClassType newClass = new ClassType(superClass, icClass,initialize);
-        
-        uniqueClassTypes.put(icClass.getName(), newClass);
-        
-        return newClass;
     }
 
   

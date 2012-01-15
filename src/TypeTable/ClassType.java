@@ -6,20 +6,24 @@ import SymbolTable.SymbolTable;
 
 public class ClassType extends Type {
 
+    	public ASTNode node;
+        public boolean initFlag = false;
         public ClassType superType;
-        //public SymbolTable table;
-        public ASTNode node;
-        public boolean _initialize = false;
-        public int _lineOfError = -1;
+        public int useLine = -1; //saves the line number in case CLASS was never defined
         
-        public ClassType(ClassType superType, ASTNode node) {
-                this.superType = superType;
+        public ClassType(ClassType superT, ASTNode node) {
+                this.superType = superT;
                 this.node = node;
         }
-        public ClassType(ClassType superType, ASTNode node,boolean initalize) {
-                this.superType = superType;
+        public ClassType(ClassType superT, ASTNode node,boolean init) {
+            	this.initFlag = init;
+        		this.superType = superT;
                 this.node = node;
-                _initialize = initalize;
+        }
+        
+  
+        public SymbolTable getSymbolTable() {
+                return this.node.getSymbolTable();
         }
         
         @Override
@@ -32,16 +36,13 @@ public class ClassType extends Type {
                 }
                 return this.superType.SubType(type);
         }
-        
-        public SymbolTable getSymbolTable() {
-                return node.getSymbolTable();
-        }
+      
         
         @Override 
         public String toString()
         {
                 if (node instanceof ICClass)
-                        return ((ICClass)node).getName();
+                        return ((ICClass)this.node).getName();
                 
                 return super.toString();
         }
