@@ -36,7 +36,7 @@ ALPHA = [A-Za-z_]
 DIGIT = [0-9]
 ALPHA_NUMERIC = {ALPHA}|{DIGIT}
 NUMBER =({DIGIT})+
-ILLEGAL_NUMER=[0]({DIGIT})+
+ILLEGAL_NUMER=[0]+[1-9]({DIGIT})*
 WHITE_SPACE = [ |\r|\n|\r\n|\t]
 
 

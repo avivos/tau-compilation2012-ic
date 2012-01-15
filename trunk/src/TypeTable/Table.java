@@ -34,32 +34,6 @@ public class Table {
         uniquePrimitiveTypes.put("void", voidType);
     }
     
-    public static String toString(String fileName)
-    {
-        StringBuffer str = new StringBuffer();
-        str.append("Type Table: " + fileName + "\n");
-        //print all primitives 
-        for (Map.Entry<String, Type> entry : uniquePrimitiveTypes.entrySet())
-                str.append("\t" + entry.getValue().index + ": Primitive type: " + entry.getValue() + "\n");
-        //classes
-        for (Map.Entry<String, ClassType> entry : uniqueClassTypes.entrySet())
-        {
-                str.append("\t" + entry.getValue().index + ": Class: " + entry.getValue());
-                ClassType superType = entry.getValue().superType;
-                if (superType != null)
-                        str.append(", Superclass ID: " +superType.index);
-                str.append("\n");
-        }
-        //arrays
-        for (Map.Entry<Type, ArrayType> entry : uniqueArrayTypes.entrySet())
-                str.append("\t" +entry.getValue().index + ": Array type: " + entry.getValue() + "\n");
-        //methods
-        for (Map.Entry<String, MethodType> entry : uniqueMethodTypes.entrySet())
-                str.append("\t" +entry.getValue().index + ": Method type: " + entry.getValue() + "\n");
-        
-        return str.toString();
-    }
-    
     public static Type getType(IC.AST.Type nodeType) {
         
         Type type;
@@ -121,83 +95,101 @@ public class Table {
         return newClass;
     }
     
-    public static ClassType addClassType(ICClass icClass, boolean init) {
-    	//the class already exist
-        if (uniqueClassTypes.containsKey(icClass.getName()))
+    public static ClassType addClassTypeDef(ICClass newCl) {
+    	//if the class already exist
+        if (uniqueClassTypes.containsKey(newCl.getName()))
         {
-            ClassType classType = uniqueClassTypes.get(icClass.getName());
+            ClassType classType = uniqueClassTypes.get(newCl.getName());
             
             //if this was previously defined
             if (classType.initFlag == true )
-                 throw new SemanticError("Class was already defined", icClass);
+                 throw new SemanticError("Class was already defined", newCl);
             else 
             {
             	//now init for previously USED but not defined
                classType.initFlag = true;
-               classType.node = icClass;
+               classType.node = newCl;
                return classType;
             }
         }
         else
         {
+        	//new class
         	ClassType superClass = null;
-        	if (icClass.hasSuperClass()) {
-        		superClass = uniqueClassTypes.get(icClass.getSuperClassName());
+        	if (newCl.hasSuperClass()) {
+        		superClass = uniqueClassTypes.get(newCl.getSuperClassName());
         		if (superClass == null || superClass.initFlag == false) {
-        			throw new SemanticError("Super class was never defined", icClass);
+        			throw new SemanticError("Super class was never defined", newCl);
         		}
         	}
-
-        	ClassType newClass = new ClassType(superClass, icClass,init);
-
-        	uniqueClassTypes.put(icClass.getName(), newClass);
-
+        	ClassType newClass = new ClassType(superClass,newCl,true);
+        	uniqueClassTypes.put(newCl.getName(), newClass);
         	return newClass;
         }
     }
 
   
-    public static ClassType getClassType(String name, ASTNode parentNode) {
-        ClassType c = uniqueClassTypes.get(name);
-        
-        if (c == null) {
-                throw new SemanticError("Class was never defined", parentNode);
+    public static ClassType getClassType(String cl, ASTNode node) {
+        ClassType type = uniqueClassTypes.get(cl);
+        if (type == null) {
+                throw new SemanticError("Class was never defined", node);
         }
-        
-        else return c;
+        else return type;
     }
     
-    public static MethodType methodType(Method nodeMethod)
-    {
-        Type returnType = getType(nodeMethod.getType());
-        
+    public static MethodType methodType(Method node){
+        Type ret = getType(node.getType());
         ArrayList<Type> params = new ArrayList<Type>();
         
-        for (Formal formal : nodeMethod.getFormals())
+        for (Formal formal : node.getFormals())
         {
-                params.add(getType(formal.getType()));
+        	    Type formalType = getType(formal.getType());
+                params.add(formalType);
         }
-        
-        return methodType(returnType, params);
+        return methodType(ret, params);
     }
     
     public static MethodType methodType(Type returnType, List<Type> paramTypes){
-        MethodType mt = new MethodType(returnType,paramTypes);
-        String key = mt.toString();
-        
-        MethodType mt_predef = uniqueMethodTypes.get(key);
-		//this code checks if the entry was already defined 
-        if (mt_predef == null) {
-                uniqueMethodTypes.put(key, mt);
-                return mt;
+        MethodType signature = new MethodType(returnType,paramTypes);
+        String sigString = signature.toString();
+        MethodType sigPreDef = uniqueMethodTypes.get(sigString);
+        if (sigPreDef == null) {
+                uniqueMethodTypes.put(sigString, signature);
+                return signature;
         } else {
         	Type.counter--; //this reduces the type index, because it was predefined
-        	return mt_predef;}
-        
+        	return sigPreDef;}
     }
     
     public static Map<String,ClassType> getClassList()
     {
         return   uniqueClassTypes; 
+    }
+    
+
+    public static String toString(String fileName)
+    {
+        StringBuffer str = new StringBuffer();
+        str.append("Type Table: " + fileName + "\n");
+        //print all primitives 
+        for (Map.Entry<String, Type> entry : uniquePrimitiveTypes.entrySet())
+                str.append("\t" + entry.getValue().index + ": Primitive type: " + entry.getValue() + "\n");
+        //classes
+        for (Map.Entry<String, ClassType> entry : uniqueClassTypes.entrySet())
+        {
+                str.append("\t" + entry.getValue().index + ": Class: " + entry.getValue());
+                ClassType superType = entry.getValue().superType;
+                if (superType != null)
+                        str.append(", Superclass ID: " +superType.index);
+                str.append("\n");
+        }
+        //arrays
+        for (Map.Entry<Type, ArrayType> entry : uniqueArrayTypes.entrySet())
+                str.append("\t" +entry.getValue().index + ": Array type: " + entry.getValue() + "\n");
+        //methods
+        for (Map.Entry<String, MethodType> entry : uniqueMethodTypes.entrySet())
+                str.append("\t" +entry.getValue().index + ": Method type: " + entry.getValue() + "\n");
+        
+        return str.toString();
     }
 }

@@ -7,9 +7,11 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
+import IC.Parser.LibraryParser;
 import IC.Parser.Parser;
 import IC.AST.ASTNode;
 import IC.AST.PrettyPrinter;
+import IC.AST.Program;
 import java_cup.runtime.*;
 
 import IC.Parser.Lexer;
@@ -46,17 +48,14 @@ public class Compiler
 			// parse the library file if needed
 			ASTNode LibNode = null;
 			if (libraryFlag)
-				LibNode = parseFile(libraryFile);
+			{
+				LibNode = parseFile(libraryFile,true,null);
+			}
 				
 			// Parse the input file
-			ASTNode ProgNode = parseFile(args[0]);
+			ASTNode ProgNode = parseFile(args[0],false,LibNode);
 			
-			//////// creating the symbol table
-			//creating visitor 
-	        SymbolTableCreator symbolTableCreator = new SymbolTableCreator(args[0], LibNode);
-	        symbolTableCreator.setLibraryStatus(libraryFlag);
-	        //the visitor will build the symbol table based on the AST
-	        ProgNode.accept(symbolTableCreator);
+
 	        
 	        
 	        /// semantic checks
@@ -146,16 +145,27 @@ public class Compiler
 		}
 	}
 
-	protected static ASTNode parseFile(String filename)
+	protected static ASTNode parseFile(String filename, boolean libFlag, ASTNode lib)
 			throws FileNotFoundException, Exception {
 		printToLog("\nParsing file: " + filename);
 
 		FileReader txtFile = new FileReader(filename);
 		Lexer scanner = new Lexer(txtFile);
-		Parser parser = new Parser(scanner);
-		parser.printTokens = printtokens;
-
-		Symbol parseSymbol = parser.parse();
+		
+		Symbol parseSymbol;
+		
+		if (libFlag)
+		{
+			LibraryParser parser = new LibraryParser(scanner);
+			parser.printTokens = printtokens;
+			parseSymbol = parser.parse();
+		}
+		else
+		{
+			Parser parser = new Parser(scanner);
+			parser.printTokens = printtokens;
+			parseSymbol = parser.parse();
+		}
 		
 		//this is for our internal debug
 		printToLog("\nFinished Parsing file: " + filename + "" +
@@ -164,13 +174,22 @@ public class Compiler
 		if ((parseSymbol!=null) && (parseSymbol.value!=null)) { // need both checks for "segfault" check
 		
 			System.out.println("Parsed " + filename + " successfully!");
-			ASTNode root = (ASTNode) parseSymbol.value;
+			ASTNode root = (Program) parseSymbol.value;
 			// Pretty-print the program to System.out if needed
 			if (printASTFlag ){
 				//input file printer
 				PrettyPrinter printer = new PrettyPrinter(filename);
 				System.out.println(printer.visit(root));
 			}
+			
+			//////// creating the symbol table
+			//creating visitor 
+	        SymbolTableCreator symbolTableCreator = new SymbolTableCreator(filename, lib);
+	        symbolTableCreator.setLibraryFlag(libFlag);
+	        //the visitor will build the symbol table based on the AST
+
+	        root.accept(symbolTableCreator);
+	        
 			return root;
 		
 		} else {

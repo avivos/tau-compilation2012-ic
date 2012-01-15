@@ -159,7 +159,7 @@ public class SymbolTable
                                 SymbolTable cur = childTable;
                                 while (cur.getKind() == TableKind.Block)
                                 {
-                                        str.append("statement block in");
+                                        str.append("statement block in ");
                                         cur = cur.getParent();
                                 }
                                 

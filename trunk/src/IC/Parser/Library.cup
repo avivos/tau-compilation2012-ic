@@ -96,7 +96,7 @@ terminal Empty; //this describe the empty program - it solves th S/R conflict
 terminal NONEmpty;
 
 
-
+non terminal Program program;
 non terminal ICClass classDecl;
 non terminal List<Method> methodDeclList;
 non terminal Type type;
@@ -120,6 +120,12 @@ precedence left IF, ELSE;
 
 //////////////
 //grammar
+
+program ::= classDecl:cl
+
+      {: List<ICClass> list = new ArrayList<ICClass>();
+       	list.add(cl);
+     	RESULT = new Program(list);:};
 
 classDecl ::= CLASS CLASS_ID:name LCBR methodDeclList:dclList RCBR {:
 	RESULT = new ICClass(nameleft, (String)name, new ArrayList<Field>(), dclList);
@@ -169,7 +175,7 @@ formals ::= {:
 :};
 
 
-fomals_list ::= type:t ID:name 	{: //this is param list for a method
+formals_list ::= type:t ID:name 	{: //this is param list for a method
 	Formal var = new Formal(t,name);
 	RESULT = new ArrayList<Formal>();
 	RESULT.add(var);

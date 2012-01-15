@@ -6,18 +6,18 @@ public class SemanticError extends RuntimeException {
 
 
         
-        private ASTNode m_Node;
+        private ASTNode node;
         
-        public SemanticError(String message, ASTNode node)
+        public SemanticError(String message, ASTNode n)
         {
                 super(message);
                 
-                m_Node = node;
+                node = n;
         }
 
         @Override
         public String toString()
         {
-                return String.format("semantic error at line %d: %s\n", m_Node.getLine(), getMessage());
+                return String.format("semantic error at line %d: %s\n", node.getLine(), getMessage());
         }
 }
