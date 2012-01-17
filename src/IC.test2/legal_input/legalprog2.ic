@@ -1,0 +1,13 @@
+class A{
+void func(int n){}
+}
+
+class B extends A{
+void vfunc(){      }
+static void main(string[] args) {
+	A b = new B();
+	b.func(3);
+    }
+}
+
+

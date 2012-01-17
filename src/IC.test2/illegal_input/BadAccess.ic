@@ -59,19 +59,8 @@ class C {
     A x;
     int i;
   	int j;
-//    x.vfunc(x , "s", 1); // virtual call with wrong argument
-//    x.v(x , 2, 1); // virtual call of non existin func
-//    v(x , 2, 1); // non existin func
-//    A.s(true); //static call of non existin func
-//    F.s(true); //static call of non existing class
-//		d.insta.i = 1;  //method call for non class
-//		d.c.i = 1; //field doesnt exist
-//   a[0][d.insta] =x; //index != int
-//     d[1] = d; //not array [] usage;
 
-	j = i +1;
-	i=i+1;
-	
+      d[1] = d; //not array [] usage;
 
 
   }

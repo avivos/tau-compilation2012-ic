@@ -1,0 +1,10 @@
+class A{
+ int func(){}
+ }
+
+class B extends A{
+ void func(){}
+
+static void main(string[] args) {}
+
+}
