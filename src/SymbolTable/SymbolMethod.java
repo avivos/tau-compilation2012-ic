@@ -42,10 +42,6 @@ public class SymbolMethod extends Symbol
         @Override
         public String toString()
         {
-               // return String.format("%s method: %s %s",
-               //                                          methodKind,
-               //                                          symName,
-               //                                          symType);
         	return methodKind+" method: "+symName+" "+symType;
         }
 }
