@@ -1,0 +1,10 @@
+class A{
+ int func(){}
+ }
+
+class B extends C{
+ void vunc(int a){}
+
+static void main(string[] args) {}
+
+}

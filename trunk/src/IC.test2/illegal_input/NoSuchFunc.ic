@@ -1,0 +1,69 @@
+
+class A {
+  string str;
+  int i;
+
+  static int sfunc(boolean b) {
+    int i;
+    if (b) {
+      {
+        int k = 5;
+      }
+      return 1;
+    }
+    else {
+      A x = new A();
+      x.i = 9;
+      x.str = "hello";
+      return 0;
+    }
+  }
+
+  void vfunc(A a , int max, int val) {
+    int[] arr = new int[max];
+    int i = 0;
+    while (i < max){
+        arr[i] = val;
+        i = i + 1;
+        Library.printi(i);
+        if (a == null)
+          break;
+    }
+  }
+}
+
+class B extends A {
+    int j;
+
+    void vfunc(A a, int max, int val) {
+    }
+}
+
+class D {
+    A insta;
+    string s;
+    A[] arr;
+    
+    void func() {
+    	this.insta = null;
+    	this.s = null;
+    	this.arr = null;
+    }
+
+}
+
+class C {
+  static void main(string[] args) {
+    A[][] a;
+    D d;
+    A x;
+    int i;
+  	int j;
+
+    x.v(x , 2, 1); // virtual call of non existin func
+
+	
+
+
+  }
+}

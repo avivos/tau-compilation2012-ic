@@ -1,0 +1,12 @@
+class A{
+void func( int a, string b){
+}
+static void main(string[] args) {}
+}
+
+class B extends A{
+void func (string b){}
+
+}
+
+

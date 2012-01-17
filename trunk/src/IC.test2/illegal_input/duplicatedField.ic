@@ -1,0 +1,9 @@
+class A{
+ int a;
+ int a;
+ void func(){}  
+
+static void main(string[] args) {}
+
+ }
+ 
