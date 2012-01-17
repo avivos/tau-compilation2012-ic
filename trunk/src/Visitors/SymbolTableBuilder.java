@@ -58,7 +58,7 @@ import IC.AST.Visitor;
 import IC.AST.While;
 
 
-public class SymbolTableCreator implements Visitor 
+public class SymbolTableBuilder implements Visitor 
 {
         private ASTNode libraryNode;
         private String fileName;
@@ -71,7 +71,7 @@ public class SymbolTableCreator implements Visitor
                 libraryFlag = flag;
         }
         
-        public SymbolTableCreator(String fname, ASTNode library)
+        public SymbolTableBuilder(String fname, ASTNode library)
         {
                 libraryNode = library;
                 fileName = fname;

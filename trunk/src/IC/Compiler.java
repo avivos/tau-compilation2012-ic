@@ -15,8 +15,8 @@ import IC.AST.Program;
 import java_cup.runtime.*;
 
 import IC.Parser.Lexer;
-import Visitors.SemanticChecker;
-import Visitors.SymbolTableCreator;
+import Visitors.SemanticsChecks;
+import Visitors.SymbolTableBuilder;
 
 
 public class Compiler
@@ -56,21 +56,22 @@ public class Compiler
 			ASTNode ProgNode = parseFile(args[0],false,LibNode);
 			
 
+			if (ProgNode!=null){
 	        
-	        
-	        /// semantic checks
-	        SemanticChecker semanticChecker = new SemanticChecker();
-	        ProgNode.accept(semanticChecker);
+				/// semantic checks
+				SemanticsChecks semanticChecker = new SemanticsChecks();
+				ProgNode.accept(semanticChecker);
 			
-	        /// print symbol table if needed
-            if (dumpSymTblFlag)
-            {
-                    System.out.println();
+			
+				/// print symbol table if needed
+				if (dumpSymTblFlag)
+				{
+					System.out.println();
                     System.out.println(ProgNode.getSymbolTable());
                     System.out.println();
                     System.out.println(TypeTable.Table.toString(args[0]));
-            }
-	        
+				}
+			}
 			
 		} catch (Exception e) {
 			System.out.print(e);
@@ -184,7 +185,7 @@ public class Compiler
 			
 			//////// creating the symbol table
 			//creating visitor 
-	        SymbolTableCreator symbolTableCreator = new SymbolTableCreator(filename, lib);
+	        SymbolTableBuilder symbolTableCreator = new SymbolTableBuilder(filename, lib);
 	        symbolTableCreator.setLibraryFlag(libFlag);
 	        //the visitor will build the symbol table based on the AST
 

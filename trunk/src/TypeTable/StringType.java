@@ -4,7 +4,13 @@ public class StringType extends Type {
 
         @Override
         public boolean SubType(Type type) {
-                return (type == this);
+            if (this == type) 
+                return true;
+            
+            if (type instanceof NullType)
+            	return true;
+            
+            return false;
         }
 
         @Override

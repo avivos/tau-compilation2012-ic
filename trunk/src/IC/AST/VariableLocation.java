@@ -11,7 +11,7 @@ public class VariableLocation extends Location {
 
 	private String name;
 	
-	private String m_Type; //new
+	private String m_Type;  //DEBUG
 
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
