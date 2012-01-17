@@ -28,12 +28,15 @@ public class ClassType extends Type {
         
         @Override
         public boolean SubType(Type type) {
-                if (this == type) {
+                if (this == type) 
                         return true;
-                }
-                if (this.superType == null) {
+                
+                if (type instanceof NullType)
+                	return true;
+                	
+                if (this.superType == null) 
                         return false;
-                }
+                
                 return this.superType.SubType(type);
         }
       

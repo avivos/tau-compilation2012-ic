@@ -4,6 +4,7 @@ class A {
   int i;
 
   static int sfunc(boolean b) {
+    int i;
     if (b) {
       {
         int k = 5;
@@ -38,8 +39,40 @@ class B extends A {
     }
 }
 
+class D {
+    A insta;
+    string s;
+    A[] arr;
+    
+    void func() {
+    	this.insta = null;
+    	this.s = null;
+    	this.arr = null;
+    }
+
+}
+
 class C {
   static void main(string[] args) {
     A[][] a;
+    D d;
+    A x;
+    int i;
+  	int j;
+//    x.vfunc(x , "s", 1); // virtual call with wrong argument
+//    x.v(x , 2, 1); // virtual call of non existin func
+//    v(x , 2, 1); // non existin func
+//    A.s(true); //static call of non existin func
+//    F.s(true); //static call of non existing class
+//		d.insta.i = 1;  //method call for non class
+//		d.c.i = 1; //field doesnt exist
+//   a[0][d.insta] =x; //index != int
+//     d[1] = d; //not array [] usage;
+
+	j = i +1;
+	i=i+1;
+	
+
+
   }
 }

@@ -13,12 +13,14 @@ public class ArrayType extends Type {
         
         @Override
         public boolean SubType(Type type) {
-                if (this == type) {
+                if (this == type) 
                         return true;
-                }
-                else {
-                        return false;
-                }
+                
+                if (type instanceof NullType)
+                	return true;
+                
+                return false;
+                
         }
 
         @Override 
