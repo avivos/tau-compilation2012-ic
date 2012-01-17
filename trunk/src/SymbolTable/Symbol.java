@@ -65,13 +65,9 @@ public class Symbol
         public String toString()
         {
                 if (symKind == SymbolKind.Class)
-                {
-                        //return String.format("%s: %s", symKind, symName); 
-                	return symKind + ": " + symName; 
-                        		
-                }
                 
-                //return String.format("%s: %s %s", symKind, symType, symName);
+                	return symKind + ": " + symName; 
+      
                 return symKind+": "+symType+" "+symName;
         }
 }
