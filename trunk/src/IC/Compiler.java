@@ -10,11 +10,13 @@ import java.util.Set;
 import IC.Parser.LibraryParser;
 import IC.Parser.Parser;
 import IC.AST.ASTNode;
+import IC.AST.ICClass;
 import IC.AST.PrettyPrinter;
 import IC.AST.Program;
 import java_cup.runtime.*;
 
 import IC.Parser.Lexer;
+import Lir.TranslationVisitor;
 import Visitors.SemanticsChecks;
 import Visitors.SymbolTableBuilder;
 
@@ -30,7 +32,7 @@ public class Compiler
 	private static PrintWriter log = null;
 	private static PrintWriter mainState = null;
 
-	
+
 	public static void main(String[] args) {
 		try {
 			// handle arguments
@@ -51,28 +53,40 @@ public class Compiler
 			{
 				LibNode = parseFile(libraryFile,true,null);
 			}
-				
+
 			// Parse the input file
 			ASTNode ProgNode = parseFile(args[0],false,LibNode);
-			
+
 
 			if (ProgNode!=null){
-	        
+
 				/// semantic checks
 				SemanticsChecks semanticChecker = new SemanticsChecks();
 				ProgNode.accept(semanticChecker);
-			
-			
+
+
 				/// print symbol table if needed
 				if (dumpSymTblFlag)
 				{
 					System.out.println();
-                    System.out.println(ProgNode.getSymbolTable());
-                    System.out.println();
-                    System.out.println(TypeTable.Table.toString(args[0]));
+					System.out.println(ProgNode.getSymbolTable());
+					System.out.println();
+					System.out.println(TypeTable.Table.toString(args[0]));
 				}
 			}
 			
+			// Starting IC->LIR Translation
+			Program program = (Program)ProgNode;
+			
+			// add the library node to the program class list
+			if (libraryFlag){
+				ICClass l = ((Program)LibNode).getClasses().get(0);
+				program.getClasses().add(l);
+			}
+			
+			TranslationVisitor translator = new TranslationVisitor();
+			program.accept(translator);
+
 		} catch (Exception e) {
 			System.out.print(e);
 			printState("ERROR");
@@ -85,8 +99,8 @@ public class Compiler
 		return;
 	}
 
-	
-	
+
+
 	//////////
 	// these are some helper funcs.
 
@@ -152,9 +166,9 @@ public class Compiler
 
 		FileReader txtFile = new FileReader(filename);
 		Lexer scanner = new Lexer(txtFile);
-		
+
 		Symbol parseSymbol;
-		
+
 		if (libFlag)
 		{
 			LibraryParser parser = new LibraryParser(scanner);
@@ -167,13 +181,13 @@ public class Compiler
 			parser.printTokens = printtokens;
 			parseSymbol = parser.parse();
 		}
-		
+
 		//this is for our internal debug
 		printToLog("\nFinished Parsing file: " + filename + "" +
 				"=================================================");
 
 		if ((parseSymbol!=null) && (parseSymbol.value!=null)) { // need both checks for "segfault" check
-		
+
 			System.out.println("Parsed " + filename + " successfully!");
 			ASTNode root = (Program) parseSymbol.value;
 			// Pretty-print the program to System.out if needed
@@ -182,17 +196,17 @@ public class Compiler
 				PrettyPrinter printer = new PrettyPrinter(filename);
 				System.out.println(printer.visit(root));
 			}
-			
+
 			//////// creating the symbol table
 			//creating visitor 
-	        SymbolTableBuilder symbolTableCreator = new SymbolTableBuilder(filename, lib);
-	        symbolTableCreator.setLibraryFlag(libFlag);
-	        //the visitor will build the symbol table based on the AST
+			SymbolTableBuilder symbolTableCreator = new SymbolTableBuilder(filename, lib);
+			symbolTableCreator.setLibraryFlag(libFlag);
+			//the visitor will build the symbol table based on the AST
 
-	        root.accept(symbolTableCreator);
-	        
+			root.accept(symbolTableCreator);
+
 			return root;
-		
+
 		} else {
 			System.out.println("Parsing of " + filename + " failed.");
 			return null;

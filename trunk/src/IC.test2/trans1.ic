@@ -1,0 +1,24 @@
+class A {
+
+	int bar() {
+		return 2;
+	}
+
+	int foo(){
+		return 1;
+	}
+	
+	static void main (string[] args) {}
+}
+
+
+class B extends A {
+
+	int foo(){
+		return 3;
+	}
+	
+	int goo(){
+		return foo()+1;
+	}
+}

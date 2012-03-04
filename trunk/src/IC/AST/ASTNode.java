@@ -11,6 +11,15 @@ public abstract class ASTNode {
 
 	private int line;
 	private SymbolTable symbolTable; //new addition
+	private int weight;
+
+	public int getWeight() {
+		return weight;
+	}
+
+	public void setWeight(int weight) {
+		this.weight = weight;
+	}
 
 	/**
 	 * Double dispatch method, to allow a visitor to visit a specific subclass.

@@ -163,7 +163,7 @@ public class Table {
     
     public static Map<String,ClassType> getClassList()
     {
-        return   uniqueClassTypes; 
+        return uniqueClassTypes; 
     }
     
 
