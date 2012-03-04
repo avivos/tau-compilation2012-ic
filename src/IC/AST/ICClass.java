@@ -2,6 +2,8 @@ package IC.AST;
 
 import java.util.List;
 
+import Lir.ClassLayout;
+
 /**
  * Class declaration AST node.
  * 
@@ -16,6 +18,8 @@ public class ICClass extends ASTNode {
 	private List<Field> fields;
 
 	private List<Method> methods;
+	
+	private ClassLayout classLayout;
 
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
@@ -79,6 +83,23 @@ public class ICClass extends ASTNode {
 
 	public List<Method> getMethods() {
 		return methods;
+	}
+	
+	public void generateClassLayout(ClassLayout superClassLayout){
+		if (superClassLayout == null){
+			classLayout = new ClassLayout(this.getMethods(), this.getFields(), null);
+		}
+		else {
+			classLayout = new ClassLayout(this.getMethods(), this.getFields(), superClassLayout);
+		}
+	}
+	
+	public void generateClassLayout(){
+		generateClassLayout(null);
+	}
+
+	public ClassLayout getClassLayout() {
+		return this.classLayout;
 	}
 
 }
