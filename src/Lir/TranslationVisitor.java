@@ -27,6 +27,7 @@ import IC.AST.LogicalBinaryOp;
 import IC.AST.LogicalUnaryOp;
 import IC.AST.MathBinaryOp;
 import IC.AST.MathUnaryOp;
+import IC.AST.Method;
 import IC.AST.NewArray;
 import IC.AST.NewClass;
 import IC.AST.PrimitiveType;
@@ -45,12 +46,16 @@ import IC.AST.While;
 
 public class TranslationVisitor implements Visitor {
 
-	Map<String, String> literalsMap = new HashMap<String,String>();				// a list of literal labels
+	Map<String, String> literalsMap = new HashMap<String,String>();					// a list of literal labels
 	Map<String, ClassLayout> classLayoutMap = new HashMap<String, ClassLayout>();	// a map from class name to classLayout
-	List<String> dispatchvectors = new LinkedList<String>();			// a list of class dispatch tables
-	List<String> functions = new LinkedList<String>();				// a list of transl. of methods.
-	String main = null;												// the translation of main method
+	Map <Method, String> methodToClassName = new HashMap<Method, String>();			// keep a map of Method->ClassName
+	
+	List<String> dispatchVectors = new LinkedList<String>();						// a list of class dispatch tables
+	List<String> functions = new LinkedList<String>();								// a list of transl. of methods.
+	
+	String main = null;																// the translation of main method
 	int targetReg = 0;
+	
 
 	@Override
 	public Object visit(Program program) {
@@ -66,6 +71,7 @@ public class TranslationVisitor implements Visitor {
 			classMap.put(cl.getName(), cl);
 		}
 
+		
 		// generate maps for methods and fields (field->offset, method->offset)
 		for (ICClass icClass : program.getClasses()){
 			if (icClass.getName().equals("Library")) continue;
@@ -76,8 +82,18 @@ public class TranslationVisitor implements Visitor {
 			else {
 				icClass.generateClassLayout();
 			}
-			dispatchvectors.add("_DV_" + icClass.getName());
+			
+			// keep track of which method belongs to which class
+			addMethodsToMap(icClass);
+			
+			// build the dispatch vector for the class
+			String DV = createDV(icClass);
+			dispatchVectors.add(DV);
+			//DEBUG
+			System.out.println(DV);			
 		}
+		
+		
 
 		// translate Class declarations
 //		for (ICClass icClass : program.getClasses()){
@@ -361,4 +377,26 @@ public class TranslationVisitor implements Visitor {
 		this.literalsMap.put("true", "_true");
 	}
 
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// HELPER FUNCTIONS
+	
+	public void addMethodsToMap(ICClass icClass){
+		String className = icClass.getName();
+		for (Method method : icClass.getMethods()){
+			methodToClassName.put(method, className);
+		}
+	}
+	
+	public String createDV(ICClass icClass){
+		String classDV = "_DV_" + icClass.getName() + ": ";
+		classDV = classDV + "[";
+		for (Method method : icClass.getClassLayout().methodToOffset.keySet()){
+			classDV += "_" + methodToClassName.get(method) + "_" + method.getName() + ",";
+		}
+		classDV = classDV.substring(0, classDV.length()-1);
+		classDV += "]";
+		
+		return classDV;
+	}
 }

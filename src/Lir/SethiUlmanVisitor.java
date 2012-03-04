@@ -167,12 +167,12 @@ public class SethiUlmanVisitor implements Visitor {
 
 	@Override
 	public Object visit(VirtualCall call) {
-		int totalWeight = 0;
-		int maxWeight = 0;
-		int argWeight = 0;
-		for (Expression arg : call.getArguments()){
-			argWeight = (Integer) arg.accept(this);
-		}
+//		int totalWeight = 0;
+//		int maxWeight = 0;
+//		int argWeight = 0;
+//		for (Expression arg : call.getArguments()){
+//			argWeight = (Integer) arg.accept(this);
+//		}
 	}
 
 	@Override
