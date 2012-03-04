@@ -33,6 +33,7 @@ import IC.AST.NewClass;
 import IC.AST.PrimitiveType;
 import IC.AST.Program;
 import IC.AST.Return;
+import IC.AST.Statement;
 import IC.AST.StatementsBlock;
 import IC.AST.StaticCall;
 import IC.AST.StaticMethod;
@@ -46,16 +47,22 @@ import IC.AST.While;
 
 public class TranslationVisitor implements Visitor {
 
+	boolean DebugFlag = true;
+	void debugPrint(String msg){
+		if (DebugFlag) System.out.print(msg);
+	}
+
 	Map<String, String> literalsMap = new HashMap<String,String>();					// a list of literal labels
 	Map<String, ClassLayout> classLayoutMap = new HashMap<String, ClassLayout>();	// a map from class name to classLayout
-	Map <Method, String> methodToClassName = new HashMap<Method, String>();			// keep a map of Method->ClassName
-	
+	Map<Method, String> methodToClassName = new HashMap<Method, String>();			// keep a map of Method->ClassName
+	Map<Method, String> methodTrans = new HashMap<Method, String>();
+
 	List<String> dispatchVectors = new LinkedList<String>();						// a list of class dispatch tables
 	List<String> functions = new LinkedList<String>();								// a list of transl. of methods.
-	
+
 	String main = null;																// the translation of main method
 	int targetReg = 0;
-	
+
 
 	@Override
 	public Object visit(Program program) {
@@ -71,7 +78,7 @@ public class TranslationVisitor implements Visitor {
 			classMap.put(cl.getName(), cl);
 		}
 
-		
+
 		// generate maps for methods and fields (field->offset, method->offset)
 		for (ICClass icClass : program.getClasses()){
 			if (icClass.getName().equals("Library")) continue;
@@ -82,23 +89,21 @@ public class TranslationVisitor implements Visitor {
 			else {
 				icClass.generateClassLayout();
 			}
-			
+
 			// keep track of which method belongs to which class
 			addMethodsToMap(icClass);
-			
+
 			// build the dispatch vector for the class
 			String DV = createDV(icClass);
 			dispatchVectors.add(DV);
 			//DEBUG
-			System.out.println(DV);			
+			debugPrint(DV + "\n");			
 		}
-		
-		
 
 		// translate Class declarations
-//		for (ICClass icClass : program.getClasses()){
-//			icClass.accept(this); // catch the returned string
-//		}
+		for (ICClass icClass : program.getClasses()){
+			icClass.accept(this); // catch the returned string
+		}
 
 		return null;
 	}
@@ -106,6 +111,9 @@ public class TranslationVisitor implements Visitor {
 	@Override
 	public Object visit(ICClass icClass) {
 
+		for (Method method : icClass.getMethods()){
+			method.accept(this);
+		}
 		return null;
 	}
 
@@ -117,25 +125,53 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(VirtualMethod method) {
-		// TODO Auto-generated method stub
+
+		// generate a comment for the function header
+		String comment = "# " + method.getName() + "(";
+		for (Formal formal : method.getFormals()){
+			comment += formal.getType().getName() + " " + formal.getName();
+		}
+		comment = comment.substring(0, comment.length()-1);
+		comment += ")";
+
+		String function = "_" + this.methodToClassName.get(method) + "_" + method.getName() + ":\n";
+		function += "\t" + comment; 
+		for (Statement statement : method.getStatements()){
+			function += statement.accept(this);
+		}
+
+		methodTrans.put(method, function);
 		return null;
 	}
 
 	@Override
 	public Object visit(StaticMethod method) {
-		// TODO Auto-generated method stub
+		// copied from the virtual call
+		// generate a comment for the function header
+		String comment = "# " + method.getName() + "(";
+		for (Formal formal : method.getFormals()){
+			comment += formal.getType().getName() + " " + formal.getName();
+		}
+		comment = comment.substring(0, comment.length()-1);
+		comment += ")";
+
+		String function = "_" + this.methodToClassName.get(method) + "_" + method.getName() + ":\n";
+		function += "\t" + comment; 
+		for (Statement statement : method.getStatements()){
+			function += statement.accept(this);
+		}
+
+		methodTrans.put(method, function);
 		return null;
 	}
 
 	@Override
 	public Object visit(LibraryMethod method) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visit(Formal formal) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -153,7 +189,18 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(Assignment assignment) {
-		// TODO Auto-generated method stub
+		String comment = "# Assignment";
+		
+		String loc = (String)assignment.getAssignment().accept(this);
+		targetReg++;
+		String var = (String)assignment.getVariable().accept(this);
+		if (assignment.getAssignment() instanceof ArrayLocation){
+			
+		}
+		else {
+			
+		}
+		
 		return null;
 	}
 
@@ -377,17 +424,17 @@ public class TranslationVisitor implements Visitor {
 		this.literalsMap.put("true", "_true");
 	}
 
-	
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// HELPER FUNCTIONS
-	
+
 	public void addMethodsToMap(ICClass icClass){
 		String className = icClass.getName();
 		for (Method method : icClass.getMethods()){
 			methodToClassName.put(method, className);
 		}
 	}
-	
+
 	public String createDV(ICClass icClass){
 		String classDV = "_DV_" + icClass.getName() + ": ";
 		classDV = classDV + "[";
@@ -396,7 +443,7 @@ public class TranslationVisitor implements Visitor {
 		}
 		classDV = classDV.substring(0, classDV.length()-1);
 		classDV += "]";
-		
+
 		return classDV;
 	}
 }
