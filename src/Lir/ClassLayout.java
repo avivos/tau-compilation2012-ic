@@ -35,19 +35,11 @@ public class ClassLayout {
 				methodNameToNode.put(method.getName(), method);
 			}
 
+			// hidden fields is not in the spec.
 			int i = fieldToOffset.size();
 			for (Field field : fieldList){
-				Field superField = fieldNameToNode.get(field.getName());
-				if (superField != null){
-					int index = fieldToOffset.get(superField);
-					fieldToOffset.remove(superField);
-					fieldToOffset.put(field, new Integer(index));
-				}
-				else {
-					fieldToOffset.put(field, new Integer(i));
-					i++;
-				}
-
+				fieldToOffset.put(field, new Integer(i));
+				i++;
 			}
 
 			i = methodToOffset.size()+1;
