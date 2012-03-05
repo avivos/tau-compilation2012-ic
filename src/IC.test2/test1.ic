@@ -1,1 +1,18 @@
-class T1 {}
+class T1 {
+int a;
+static void main (string[] args){}
+	
+}
+
+class T2  {
+
+	void abb (string[] args){
+		T1 test;
+		test.a=3;
+		}
+	
+}
+
+class T3 {
+	int a;
+}

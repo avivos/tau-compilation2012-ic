@@ -1,8 +1,11 @@
 package Visitors;
 
 
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import SymbolTable.Symbol;
 import SymbolTable.SymbolMethod;
@@ -66,6 +69,11 @@ public class SymbolTableBuilder implements Visitor
         boolean libraryFlag;
         int variables = 0;
         
+        
+        /// fwd ref database.
+        Map<String, LinkedList<LinkedHashMap<ASTNode,Symbol> >> FwdRefTable = new LinkedHashMap<String, LinkedList< LinkedHashMap<ASTNode,Symbol> >>();
+        
+        
         public void setLibraryFlag(boolean flag)
         {
                 libraryFlag = flag;
@@ -91,7 +99,9 @@ public class SymbolTableBuilder implements Visitor
         {
                 Symbol sym = cls.getSymbolTable().lookup(name, node);
                 if (sym != null && sym.getKind() == SymbolKind.Field )
-                        throw new SemanticError("Field with same name already defined", node);
+                    throw new SemanticError("Field with same name already defined", node);
+                if (sym != null && sym.getKind() == SymbolKind.Method )
+                    throw new SemanticError("Method with same name already defined", node);
         }
         
         private void checkDuplicateMethods(ICClass cls, Method node, String name)
@@ -99,15 +109,27 @@ public class SymbolTableBuilder implements Visitor
                 Symbol sym = cls.getSymbolTable().lookupScope(name);
                 if (sym != null && sym.getKind() == SymbolKind.Method)
                         throw new SemanticError("Method with same name was already defined ", node);
+                if (sym != null && sym.getKind() == SymbolKind.Field)
+                    throw new SemanticError("Field with same name was already defined ", node);
                 
                 sym = cls.getSymbolTable().lookup(name, node);
                 
-                if (sym != null && sym.getKind() == SymbolKind.Method )
+                if (sym != null && sym.getKind() == SymbolKind.Method ){
                 	if	(!compareFormals(((Method)sym.getNode()).getFormals(),node.getFormals()) //compare formals
                           ||(!node.getType().getName().equalsIgnoreCase(((Method)sym.getNode()).getType().getName())) //compare return val
                           ||(node.getType().getDimension()!= ((Method)sym.getNode()).getType().getDimension())) //compare dim
                 		throw new SemanticError("overloading Method is not allowed ",node);
+                	if (node instanceof VirtualMethod)
+                		if  (((SymbolMethod)sym).getMethodKind() == SymbolMethod.MethodKind.Static )
+                			throw new SemanticError("overloading Static Method with Virtual Method is not allowed ",node);
+                	if (node instanceof StaticMethod)
+                		if  (((SymbolMethod)sym).getMethodKind() == SymbolMethod.MethodKind.Virtual )
+                			throw new SemanticError("overloading Virtual Method with Static Method is not allowed ",node);
+                }
         }
+        
+       
+       
         
         private boolean compareFormals(List<Formal> list1, List<Formal> list2)
         {
@@ -169,6 +191,18 @@ public class SymbolTableBuilder implements Visitor
                         if (((ClassType) pairs.getValue()).initFlag == false)
                                 throw new SemanticError("Undefined class used ", ((ClassType) pairs.getValue()).node);
                 }       
+                
+                //check refs
+                if (!FwdRefTable.isEmpty()){
+                	for (Entry<String, LinkedList<LinkedHashMap<ASTNode, Symbol>>> refList : FwdRefTable.entrySet())
+                		for (LinkedHashMap<ASTNode,Symbol> refMap : refList.getValue())
+                			for (Map.Entry<ASTNode,Symbol> refPair : refMap.entrySet()){
+                				throw new SemanticError("Undefined type used ", refPair.getKey());
+                			}
+                	
+                }
+                
+                
                 return globalTable;
         }
         
@@ -224,6 +258,30 @@ public class SymbolTableBuilder implements Visitor
                         classSymTable.insert(sym);
                 }
                 
+                /// now resolve the Fwd refs of this
+                if (FwdRefTable.containsKey(node.getName())){
+                	List<LinkedHashMap<ASTNode,Symbol>> refList = FwdRefTable.get(node.getName());
+                	
+                	for (LinkedHashMap<ASTNode,Symbol> refMap : refList){
+                		for (Map.Entry<ASTNode,Symbol> refPair : refMap.entrySet()){
+                			//location var
+                			if ( refPair.getKey() instanceof LocalVariable){
+                				((LocalVariable)refPair.getKey()).getType().setSymbolTable(classSymTable);
+                				refPair.getValue().setType(   TypeTable.Table.getType(   ((LocalVariable)refPair.getKey()).getType()) );
+                			}
+                			//field
+                    		if ( refPair.getKey() instanceof Field)
+                    			refPair.getValue().setType(   TypeTable.Table.getType(   ((Field)refPair.getKey()).getType()) );
+                    		
+                			
+                		}
+                	FwdRefTable.remove(node.getName());
+                		
+                		
+                	}
+                }
+                	
+                
                 return classSymTable;
         }
 
@@ -261,8 +319,17 @@ public class SymbolTableBuilder implements Visitor
                         Symbol sym = new Symbol(formal.getName(),formal,SymbolKind.Parameter,type);
                         //add it to method table
                         methodlTable.insert(sym);
+                        //set the symbol table for the formal
+                        formal.setSymbolTable(methodlTable);
                 }
                 //func body
+                
+                // static- calling virtual calls & field checks... not working
+                boolean staticMethodFlag = false;
+                if (mKind  == MethodKind.Static)
+                	staticMethodFlag = true;
+                	
+                	
                 for (Statement stmt : m.getStatements())
                 {
                         stmt.setSymbolTable(methodlTable);
@@ -395,11 +462,12 @@ public class SymbolTableBuilder implements Visitor
                         Statement elseStmt = ifStatement.getElseOperation();
                         elseStmt.setSymbolTable(ifStatement.getSymbolTable());
                         Object elseTable = elseStmt.accept(this);
-                        if (thenTable != null)
+                        if (elseTable != null)
                         {
                                 SymbolTable symElseTable = (SymbolTable)elseTable;
                                 symElseTable.setParent(ifStatement.getSymbolTable());
                         }
+                        
                 }
                 
                 return null;
@@ -439,9 +507,42 @@ public class SymbolTableBuilder implements Visitor
                 Symbol tableSym = var.getSymbolTable().lookupScope(var.getName());
                 if (tableSym != null && tableSym.getNode() != var)
                         throw new SemanticError("Variable with the same name was already defined", var);
+                
                 Type type = TypeTable.Table.getType(var.getType());
+
+                
                 Symbol varSym = new Symbol(var.getName(),var,SymbolKind.Variable,type);
                 var.getSymbolTable().insert(varSym);
+                
+                ////
+                //enter code - add to resolve later table
+                if (type == null){
+                	if (FwdRefTable.containsKey(var.getType().getName())){
+                		// already in ref table
+                		LinkedHashMap<ASTNode,Symbol> newEntry = new LinkedHashMap<ASTNode,Symbol>();
+                		newEntry.put(var, varSym);
+                		
+                		
+                		FwdRefTable.get(var.getType().getName()).add(newEntry);
+                		
+                		
+                		
+                	} else {
+                		//need new ref entry
+                		LinkedList<LinkedHashMap<ASTNode,Symbol>> symLst = new LinkedList<LinkedHashMap<ASTNode,Symbol>>();
+                		
+                		LinkedHashMap<ASTNode,Symbol> newEntry = new LinkedHashMap<ASTNode,Symbol>();
+                		newEntry.put(var, varSym);
+                		symLst.add(newEntry);
+                		
+                		FwdRefTable.put(var.getType().getName(), symLst);
+                		
+                	}
+                }
+                
+                ///
+                
+                
                 //handle assignment declaration
                 Expression assgV = var.getInitValue();                
                 if (assgV != null){
@@ -519,6 +620,7 @@ public class SymbolTableBuilder implements Visitor
                 Expression exp = arr.getSize();
                 exp.setSymbolTable(arr.getSymbolTable());
                 exp.accept(this);
+              
                 return null;
         }
 

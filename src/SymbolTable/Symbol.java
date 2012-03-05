@@ -56,6 +56,11 @@ public class Symbol
                 return symType;
         }
         
+        public void setType(Type t)
+        {
+                symType = t;
+        }
+        
         public ASTNode getNode()
         {
                 return symNode;

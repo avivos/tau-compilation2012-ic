@@ -95,6 +95,8 @@ public class SymbolTable
                         return sym;
                 	if (sym.getKind() == SymbolKind.Method)
                         return sym;
+                	if (sym.getKind() == SymbolKind.Field)
+                        return sym;
                 }
                 if (this.parentSymbolTable != null)
                         return this.parentSymbolTable.lookup(name, node);
