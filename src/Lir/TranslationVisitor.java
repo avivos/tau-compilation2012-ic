@@ -8,6 +8,7 @@ import java.util.Map;
 import IC.BinaryOps;
 import IC.LiteralTypes;
 import IC.UnaryOps;
+import IC.AST.ASTNode;
 import IC.AST.ArrayLocation;
 import IC.AST.Assignment;
 import IC.AST.Break;
@@ -44,6 +45,8 @@ import IC.AST.VirtualCall;
 import IC.AST.VirtualMethod;
 import IC.AST.Visitor;
 import IC.AST.While;
+import SymbolTable.Symbol;
+import SymbolTable.Symbol.SymbolKind;
 
 public class TranslationVisitor implements Visitor {
 
@@ -61,7 +64,65 @@ public class TranslationVisitor implements Visitor {
 	List<String> functions = new LinkedList<String>();								// a list of transl. of methods.
 
 	String main = null;																// the translation of main method
+	
+	// this is for break and continue;
+	int loopCounter = 0;
+	
+	// variable names management
+	Map<Symbol, String> varMaps = new HashMap<Symbol, String>();
+	int varMapsUidCounter = 0; 
+	
+	String getVarUniqID(ASTNode node){
+		Symbol sym= null;
+		
+		if (node instanceof LocalVariable){
+			LocalVariable v = (LocalVariable) node;
+			sym = v.getSymbolTable().lookup(v.getName(), v);		
+		}
+		// more ifs of node typs
+		
+		
+		if (sym.getKind()==SymbolKind.Variable){
+			//check if was already given uniq id
+			if(varMaps.containsKey(sym))
+				return varMaps.get(sym);
+			else {
+				// create a uniq id
+				varMapsUidCounter++;
+				String str = "var"+varMapsUidCounter;
+				varMaps.put(sym, str);
+				return str;
+			}
+		}
+		
+		
+		// WE DONT KNOW !!!!!!
+		if (sym.getKind()==SymbolKind.Parameter){
+			//check if was already given uniq id
+			if(varMaps.containsKey(sym))
+				return varMaps.get(sym);
+			else {
+				// create a uniq id
+				varMapsUidCounter++;
+				String str = "var"+varMapsUidCounter;
+				varMaps.put(sym, str);
+				return str;
+			}
+		}
+		
+		
+		
+	}
+	
+	
+	
+	
+	/// manage the register count
 	int targetReg = 0;
+	
+	String getCurReg(){
+		return "R"+targetReg;
+	}
 
 
 	@Override
@@ -104,6 +165,14 @@ public class TranslationVisitor implements Visitor {
 		for (ICClass icClass : program.getClasses()){
 			icClass.accept(this); // catch the returned string
 		}
+		
+		if (DebugFlag) {
+			for (String MethodTranslation: methodTrans.values()){
+				debugPrint("\n"+MethodTranslation);
+			}
+				
+		}
+		
 
 		return null;
 	}
@@ -119,7 +188,7 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(Field field) {
-		// TODO Auto-generated method stub
+		// done by the offset table
 		return null;
 	}
 
@@ -127,36 +196,49 @@ public class TranslationVisitor implements Visitor {
 	public Object visit(VirtualMethod method) {
 
 		// generate a comment for the function header
-		String comment = "# " + method.getName() + "(";
+		StringBuffer comment = new StringBuffer();
+		comment.append("# " + method.getName() + "(");
+		
+		int commaCount = method.getFormals().size();
 		for (Formal formal : method.getFormals()){
-			comment += formal.getType().getName() + " " + formal.getName();
+			comment.append(formal.getType().getName() + " " + formal.getName());
+			if (commaCount>1){
+				comment.append(",");
+				commaCount--;
+			}
 		}
-		comment = comment.substring(0, comment.length()-1);
-		comment += ")";
+		comment.append(")");
 
-		String function = "_" + this.methodToClassName.get(method) + "_" + method.getName() + ":\n";
-		function += "\t" + comment; 
+		String functionHeader = "_" + this.methodToClassName.get(method) + "_" + method.getName() + ":";
+		functionHeader += "\t" + comment +"\n"; 
 		for (Statement statement : method.getStatements()){
-			function += statement.accept(this);
+			functionHeader += statement.accept(this);
 		}
+		
+		//.translate body
 
-		methodTrans.put(method, function);
+		methodTrans.put(method, functionHeader);
 		return null;
 	}
 
 	@Override
 	public Object visit(StaticMethod method) {
-		// copied from the virtual call
 		// generate a comment for the function header
-		String comment = "# " + method.getName() + "(";
+		StringBuffer comment = new StringBuffer();
+		comment.append("# " + method.getName() + "(");
+		
+		int commaCount = method.getFormals().size();
 		for (Formal formal : method.getFormals()){
-			comment += formal.getType().getName() + " " + formal.getName();
+			comment.append(formal.getType().getName() + " " + formal.getName());
+			if (commaCount>1){
+				comment.append(",");
+				commaCount--;
+			}
 		}
-		comment = comment.substring(0, comment.length()-1);
-		comment += ")";
+		comment.append(")");
 
-		String function = "_" + this.methodToClassName.get(method) + "_" + method.getName() + ":\n";
-		function += "\t" + comment; 
+		String function = "_" + this.methodToClassName.get(method) + "_" + method.getName() + ":";
+		function += "\t" + comment + "\n"; 
 		for (Statement statement : method.getStatements()){
 			function += statement.accept(this);
 		}
@@ -212,43 +294,104 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(Return returnStatement) {
-		// TODO Auto-generated method stub
-		return null;
+		String trans = "";
+		if (returnStatement.hasValue()){
+			String value = (String) returnStatement.getValue().accept(this);
+			trans = value+"Return " + getCurReg()+"\n";
+			targetReg--;
+		}else{
+			trans = "Return 9999\n";
+		}
+		return trans;
 	}
 
 	@Override
 	public Object visit(If ifStatement) {
-		// TODO Auto-generated method stub
-		return null;
+		String totalTrans = null;
+		String condtrans = (String) ifStatement.getCondition().accept(this);
+		int uid = LiteralUtil.uniqID();
+		totalTrans = condtrans +
+					"Compare 0,"+ getCurReg() + "\n";
+		if (ifStatement.hasElse())
+			totalTrans += "JumpTrue _else_label"+uid + "\n";
+		else
+			totalTrans += "JumpTrue _end_label"+uid + "\n";
+		
+		
+		String thenTrans = (String)  ifStatement.getOperation().accept(this);
+	
+		totalTrans += thenTrans;
+
+		if (ifStatement.hasElse())
+			totalTrans += "Jump _end_label"+uid+"\n";
+
+		
+		String elseTrans = "";
+		
+		if (ifStatement.hasElse()){
+			elseTrans = "_else_label"+uid+":\n";
+			elseTrans += (String)  ifStatement.getElseOperation().accept(this);
+		}
+		
+		totalTrans += elseTrans +
+						"_end_label"+uid+":\n";
+		
+		
+
+		return totalTrans;
 	}
 
 	@Override
 	public Object visit(While whileStatement) {
-		// TODO Auto-generated method stub
-		return null;
+		int uid = loopCounter++;
+		String trans = "_while_test_label" + uid + ":\n";
+						    
+		String condTrans = (String)whileStatement.getCondition().accept(this);
+		
+		trans += condTrans + 
+				 "Compare 0,"+getCurReg()+"\n"+
+				 "JumpTrue _while_end_label"+uid+"\n";
+		
+		String loopTrans = (String)whileStatement.getOperation().accept(this);
+		
+		trans += loopTrans +
+				 "Jump _while_test_label"+ uid +"\n"+
+				 "_while_end_label"+ uid +":\n";
+		
+		loopCounter--;
+
+		return trans;
 	}
 
 	@Override
 	public Object visit(Break breakStatement) {
-		// TODO Auto-generated method stub
-		return null;
+		String trans = "Jump _while_end_label"+ loopCounter +"\n";
+		return trans;
 	}
 
 	@Override
 	public Object visit(Continue continueStatement) {
-		// TODO Auto-generated method stub
-		return null;
+		String trans = "Jump _while_test_label"+ loopCounter +"\n";
+		return trans;
 	}
 
 	@Override
 	public Object visit(StatementsBlock statementsBlock) {
-		// TODO Auto-generated method stub
-		return null;
+		String trans = "";
+		for (Statement stmt:statementsBlock.getStatements()){
+			trans += (String)stmt.accept(this);
+		}
+		return trans;
 	}
 
 	@Override
 	public Object visit(LocalVariable localVariable) {
-		// TODO Auto-generated method stub
+		String trans = "";
+		if (localVariable.hasInitValue()){
+			trans += (String) localVariable.getInitValue().accept(this);
+			trans += "Move "+getCurReg()+","+localVariable.getName();
+		}
+		
 		return null;
 	}
 
@@ -266,14 +409,38 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(StaticCall call) {
-		// TODO Auto-generated method stub
-		return null;
+		// Adi & riki
+		String trans = null;
+
+		// translate the arguments expressions and store them to registers
+		int num = targetReg;
+		for (Expression arg : call.getArguments()){
+			targetReg++;
+			trans += arg.accept(this);
+		}
+
+		// translate
+		int methodNum = 0; //= classLayoutMap.get(call.getName()).
+		trans += "StaticCall R" + targetReg + "." + methodNum + "(";
+		targetReg = num;
+		for (Expression arg : call.getArguments()){
+			targetReg++;
+			trans += arg.toString() +"=" + "R"+ targetReg;
+		}
+
+		trans += ")\n";
+
+
+		return trans;
 	}
 
 	@Override
 	public Object visit(VirtualCall call) {
 		String trans = null;
-		trans = (String) call.getLocation().accept(this);
+		if (call.getLocation()==null)
+			trans = "";
+		else
+			trans = (String) call.getLocation().accept(this);
 
 		// translate the arguments expressions and store them to registers
 		int num = targetReg;
@@ -288,7 +455,7 @@ public class TranslationVisitor implements Visitor {
 		targetReg = num;
 		for (Expression arg : call.getArguments()){
 			targetReg++;
-			trans += arg.toString() +"=" + "R"+ targetReg;
+			trans += arg.toString() +"=" + getCurReg();
 		}
 
 		trans += ")\n";
@@ -397,19 +564,44 @@ public class TranslationVisitor implements Visitor {
 	public Object visit(Literal literal) {
 		//get the label for this literal
 		String label = null;
-		if (literal.getType() == LiteralTypes.STRING){
-			label = literalsMap.get((String) literal.getValue());
-
-			// new literal - create a label for it
-			if (label == null){
-				label = LiteralUtil.createLiteralLabel();
-				literalsMap.put( (String) literal.getValue(), label);
+		
+		switch (literal.getType()){
+			case STRING: {
+				if (literalsMap.containsKey((String) literal.getValue()))
+					label = literalsMap.get((String) literal.getValue());
+				else{
+					// new literal - create a label for it
+					label = LiteralUtil.createLiteralLabel();
+					literalsMap.put( (String) literal.getValue(), label);
+				}
+				break;
 			}
-			return label;
+			case FALSE:{
+				label = "0";
+				break;
+			}
+			case TRUE:{
+				label = "1";
+				break;
+			}
+			case NULL:{
+				label = "0";
+				break;
+			}
+			case INTEGER:{
+				label = literal.getValue().toString();
+				break;
+			}
+			default:{
+				label = "<ERROR- bad literal>";
+			}
 		}
+		String trans = "Move " + label;
+		targetReg++;
+		trans += ","+getCurReg()+"\n";
 
-		//return null on any other kind of literal
-		return null;
+		
+		return trans;
 	}
 
 	@Override

@@ -8,6 +8,8 @@ import IC.AST.*;
 
 public class ClassLayout {
 	
+	//offset handling
+	
 	String className = null;
 
 	Map<Method, Integer> methodToOffset = new HashMap<Method, Integer>();

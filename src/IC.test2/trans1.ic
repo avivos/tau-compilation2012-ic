@@ -1,21 +1,36 @@
+class Mainy {
+	static void main (string[] args) {
+		A.func1();
+		
+	}
+}
+
 class A {
 
-	int bar() {
-		return 2;
+	int loop(int gfh) {
+	
+		while (true)
+				return 100;
+		return 999;
 	}
 
 	int foo(){
-		return 1;
+		return 200;
 	}
 	
-	static void main (string[] args) {}
+	static void func1(){
+	}
+	
 }
 
 
 class B extends A {
 
 	int foo(){
-		return 3;
+		if(true)
+			return 300;
+		else
+			return 999;
 	}
 	
 	int goo(){

@@ -138,6 +138,12 @@ public class Compiler
 		if (argSet.contains("-print-ast")) {
 			printASTFlag = true;
 		}
+		
+		//auto parse the lib file:
+		libraryFlag = true;
+		libraryFile = "bin\\IC\\Parser\\libic.sig";
+		////////
+		
 		for (String arg : args) {
 			if (arg.startsWith("-L")){
 				printToLog("a library file was given");
