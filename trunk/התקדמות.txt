@@ -8,3 +8,14 @@ to do list -
 2.1 - in symbol table builder // static- calling virtual calls & field checks... not working
 
 3. do part 4
+
+
+part 4 -
+==========================================
+1. the DV table is printed in reverse order
+2. the main func should be printed last
+
+foo(){
+int x = 5
+{int x = 3 }
+}

@@ -173,6 +173,7 @@ public class SethiUlmanVisitor implements Visitor {
 //		for (Expression arg : call.getArguments()){
 //			argWeight = (Integer) arg.accept(this);
 //		}
+		return null;
 	}
 
 	@Override
