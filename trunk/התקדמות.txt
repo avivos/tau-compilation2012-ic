@@ -1,5 +1,10 @@
-צריך לברר -
-הקלאס BINOP מכיל OPERATOR בקונסטרקטור.. אבל אין כזה קלאס.
-האם ליצור קלאס כזה ?
 
-מה זה הVLEFT שכולם עשו... אם לא - ההעברה של השורה בעייתית.
+to do list -
+
+1. CHECK ON LINUX THE PATH !!! - auto parse the lib file with default values if non were given. (compiler - in void parseMainArgs)
+
+2. fix the remaining malfunctions.
+
+2.1 - in symbol table builder // static- calling virtual calls & field checks... not working
+
+3. do part 4

@@ -103,7 +103,7 @@ public class SemanticsChecks implements Visitor {
 		Type locType = (Type) assgin.getAssignment().accept(this);
 		Type varType = (Type) assgin.getVariable().accept(this);
 		if (varType == null)
-			throw new SemanticError("Variable type is undefined", assgin);
+			throw new SemanticError("Variable type is undefined in the assignment", assgin);
 		
 		if (!varType.SubType(locType))
 			throw new SemanticError("Type mismatch in assignment", assgin);
@@ -158,9 +158,9 @@ public class SemanticsChecks implements Visitor {
 			throw new SemanticError("The while condition is not a boolean type", whileStmt);
 		}
 
-		loopsNum ++;
+		loopsNum++;
 		whileStmt.getOperation().accept(this);
-		loopsNum --;
+		loopsNum--;
 
 		return null;
 	}
@@ -170,8 +170,6 @@ public class SemanticsChecks implements Visitor {
 
 		if (loopsNum <= 0)
 			throw new SemanticError("Break statement outside of loop", breakStatement);
-		else
-			loopsNum--;
 
 		return null;
 	}
@@ -374,6 +372,16 @@ public class SemanticsChecks implements Visitor {
 	{
 		Type baseType = TypeTable.Table.getType(newArray.getType());
 		Type type = TypeTable.Table.arrayType(baseType);
+		
+		Type sizeType = (Type) newArray.getSize().accept(this); 
+		if (sizeType == null)
+			throw new SemanticError("Variable type is undefined", newArray);
+		IntType obj = new IntType();
+		
+		boolean bool = sizeType.toString() == "int";
+		if (!bool)
+			throw new SemanticError("Type mismatch in new Array size", newArray);
+		
 
 		return type;
 	}
@@ -381,7 +389,9 @@ public class SemanticsChecks implements Visitor {
 	@Override
 	public Object visit(Length length) 
 	{
-		length.getArray().accept(this);
+		Type type = (Type) length.getArray().accept(this);
+		if (!(type instanceof ArrayType))
+			throw new SemanticError("Length cant be used on non-Arrays", length);
 
 		return TypeTable.Table.intType;
 	}
