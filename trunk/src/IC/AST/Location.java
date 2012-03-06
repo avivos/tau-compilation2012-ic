@@ -13,6 +13,8 @@ public abstract class Location extends Expression {
 	 * @param line
 	 *            Line number of reference.
 	 */
+	public TypeTable.Type TTtype; //used only for arrays !
+	
 	protected Location(int line) {
 		super(line);
 	}

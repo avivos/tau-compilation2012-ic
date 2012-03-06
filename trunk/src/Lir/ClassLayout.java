@@ -16,6 +16,7 @@ public class ClassLayout {
 	Map<Method, String> methodToClassName = new HashMap<Method, String>();
 
 	Map<Field, Integer> fieldToOffset = new HashMap<Field, Integer>();
+	Map<String, Field> fieldNameToNode = new HashMap<String, Field>();
 
 
 	public ClassLayout(List<Method> methodList, List<Field> fieldList, ClassLayout superLayout) {
@@ -24,7 +25,7 @@ public class ClassLayout {
 			// run over the super class' layout and add what it has first
 			// Fields 
 			Map<Field, Integer> superFieldToOffset = superLayout.getFieldOffMap();
-			Map<String, Field> fieldNameToNode = new HashMap<String, Field>();
+			
 			for (Field field : superFieldToOffset.keySet()){
 				this.fieldToOffset.put(field, new Integer(superFieldToOffset.get(field)));
 				fieldNameToNode.put(field.getName(), field);
@@ -38,9 +39,10 @@ public class ClassLayout {
 			}
 
 			// hidden fields is not in the spec.
-			int i = fieldToOffset.size();
+			int i = fieldToOffset.size()+1;
 			for (Field field : fieldList){
 				fieldToOffset.put(field, new Integer(i));
+				fieldNameToNode.put(field.getName(), field);
 				i++;
 			}
 
@@ -59,9 +61,10 @@ public class ClassLayout {
 			}
 		}
 		else {
-			int i = 0;
+			int i = 1;
 			// map fields to offsets
 			for (Field field : fieldList){
+				fieldNameToNode.put(field.getName(), field);
 				fieldToOffset.put(field, new Integer(i));
 				i++;
 			}
@@ -75,13 +78,17 @@ public class ClassLayout {
 	}
 
 
-	private Map<Method, Integer> getMethodOffMap() {
+	public Map<Method, Integer> getMethodOffMap() {
 		return this.methodToOffset;
 	}
 
 
-	private Map<Field, Integer> getFieldOffMap() {
+	public Map<Field, Integer> getFieldOffMap() {
 		return this.fieldToOffset;
+	}
+
+	public Map<String, Field> getFieldNameToNode() {
+		return this.fieldNameToNode;
 	}
 
 }
