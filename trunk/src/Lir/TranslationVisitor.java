@@ -112,6 +112,7 @@ public class TranslationVisitor implements Visitor {
 		
 		
 		
+		return "error getting unique id of node in lien " + node.getLine();				// this 
 	}
 	
 	
@@ -271,17 +272,17 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(Assignment assignment) {
-		String comment = "# Assignment";
-		
-		String loc = (String)assignment.getAssignment().accept(this);
-		targetReg++;
-		String var = (String)assignment.getVariable().accept(this);
-		if (assignment.getAssignment() instanceof ArrayLocation){
-			
-		}
-		else {
-			
-		}
+//		String comment = "# Assignment";
+//		if (assignment.getVariable() instanceof )
+//		String loc = (String)assignment.getAssignment().accept(this);
+//		targetReg++;
+//		String var = (String)assignment.getVariable().accept(this);
+//		if (assignment.getAssignment() instanceof ArrayLocation){
+//			
+//		}
+//		else {
+//			
+//		}
 		
 		return null;
 	}
@@ -389,10 +390,13 @@ public class TranslationVisitor implements Visitor {
 		String trans = "";
 		if (localVariable.hasInitValue()){
 			trans += (String) localVariable.getInitValue().accept(this);
-			trans += "Move "+getCurReg()+","+localVariable.getName();
+			trans += "Move " + getCurReg() + "," + getVarUniqID(localVariable) + "\n";
+		}
+		else {
+			getVarUniqID(localVariable);
 		}
 		
-		return null;
+		return trans;
 	}
 
 	@Override
