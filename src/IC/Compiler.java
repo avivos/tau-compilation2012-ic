@@ -73,7 +73,7 @@ public class Compiler
 					System.out.println();
 					System.out.println(TypeTable.Table.toString(args[0]));
 				}
-			}
+			
 			
 			// Starting IC->LIR Translation
 			Program program = (Program)ProgNode;
@@ -86,6 +86,7 @@ public class Compiler
 			
 			TranslationVisitor translator = new TranslationVisitor();
 			program.accept(translator);
+			}
 
 		} catch (Exception e) {
 			System.out.print(e);

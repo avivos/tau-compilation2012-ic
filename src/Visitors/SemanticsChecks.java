@@ -250,6 +250,8 @@ public class SemanticsChecks implements Visitor {
 			throw new SemanticError("Illegal array index type", location);
 
 		Type type = (Type)location.getArray().accept(this);
+		
+		location.TTtype = type; //save the type to read it later by offset table
 
 		if (!(type instanceof ArrayType))
 			throw new SemanticError("Can't access "+ type.toString() +" as an array", location);

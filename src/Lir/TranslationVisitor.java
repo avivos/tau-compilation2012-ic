@@ -47,6 +47,10 @@ import IC.AST.Visitor;
 import IC.AST.While;
 import SymbolTable.Symbol;
 import SymbolTable.Symbol.SymbolKind;
+import TypeTable.ArrayType;
+import TypeTable.ClassType;
+import TypeTable.Type;
+import Visitors.SemanticsChecks;
 
 public class TranslationVisitor implements Visitor {
 
@@ -64,24 +68,24 @@ public class TranslationVisitor implements Visitor {
 	List<String> functions = new LinkedList<String>();								// a list of transl. of methods.
 
 	String main = null;																// the translation of main method
-	
+
 	// this is for break and continue;
 	int loopCounter = 0;
-	
+
 	// variable names management
 	Map<Symbol, String> varMaps = new HashMap<Symbol, String>();
 	int varMapsUidCounter = 0; 
-	
+
 	String getVarUniqID(ASTNode node){
 		Symbol sym= null;
-		
+
 		if (node instanceof LocalVariable){
 			LocalVariable v = (LocalVariable) node;
 			sym = v.getSymbolTable().lookup(v.getName(), v);		
 		}
 		// more ifs of node typs
-		
-		
+
+
 		if (sym.getKind()==SymbolKind.Variable){
 			//check if was already given uniq id
 			if(varMaps.containsKey(sym))
@@ -94,8 +98,8 @@ public class TranslationVisitor implements Visitor {
 				return str;
 			}
 		}
-		
-		
+
+
 		// WE DONT KNOW !!!!!!
 		if (sym.getKind()==SymbolKind.Parameter){
 			//check if was already given uniq id
@@ -109,18 +113,18 @@ public class TranslationVisitor implements Visitor {
 				return str;
 			}
 		}
-		
-		
-		
+
+
+
 		return "error getting unique id of node in lien " + node.getLine();				// this 
 	}
-	
-	
-	
-	
+
+
+
+
 	/// manage the register count
 	int targetReg = 0;
-	
+
 	String getCurReg(){
 		return "R"+targetReg;
 	}
@@ -152,6 +156,9 @@ public class TranslationVisitor implements Visitor {
 				icClass.generateClassLayout();
 			}
 
+			// add <Name classLayout> to classLayoutMap
+			classLayoutMap.put(icClass.getName(), icClass.getClassLayout());
+
 			// keep track of which method belongs to which class
 			addMethodsToMap(icClass);
 
@@ -166,14 +173,14 @@ public class TranslationVisitor implements Visitor {
 		for (ICClass icClass : program.getClasses()){
 			icClass.accept(this); // catch the returned string
 		}
-		
+
 		if (DebugFlag) {
 			for (String MethodTranslation: methodTrans.values()){
 				debugPrint("\n"+MethodTranslation);
 			}
-				
+
 		}
-		
+
 
 		return null;
 	}
@@ -199,7 +206,7 @@ public class TranslationVisitor implements Visitor {
 		// generate a comment for the function header
 		StringBuffer comment = new StringBuffer();
 		comment.append("# " + method.getName() + "(");
-		
+
 		int commaCount = method.getFormals().size();
 		for (Formal formal : method.getFormals()){
 			comment.append(formal.getType().getName() + " " + formal.getName());
@@ -215,7 +222,7 @@ public class TranslationVisitor implements Visitor {
 		for (Statement statement : method.getStatements()){
 			functionHeader += statement.accept(this);
 		}
-		
+
 		//.translate body
 
 		methodTrans.put(method, functionHeader);
@@ -227,7 +234,7 @@ public class TranslationVisitor implements Visitor {
 		// generate a comment for the function header
 		StringBuffer comment = new StringBuffer();
 		comment.append("# " + method.getName() + "(");
-		
+
 		int commaCount = method.getFormals().size();
 		for (Formal formal : method.getFormals()){
 			comment.append(formal.getType().getName() + " " + formal.getName());
@@ -278,16 +285,16 @@ public class TranslationVisitor implements Visitor {
 		targetReg++; // meaning this ^ gets a register;
 		trans += valStr;
 		//trans += "Move " +getCurReg()+","
-		
+
 		//String varStr = (String)assignment.getVariable().accept(this);
 		if (assignment.getVariable() instanceof VariableLocation){
 			// ID | expr.ID
 			VariableLocation var = (VariableLocation)assignment.getVariable();
-			
+
 			if(!var.isExternal()){ // ID
 				trans += "Move "+getCurReg()+","+ getVarUniqID(var)+"\n";
 				targetReg--;
-				
+
 			}else{
 				// expr.ID
 				String varStr = (String)var.getLocation().accept(this);
@@ -296,30 +303,30 @@ public class TranslationVisitor implements Visitor {
 				Symbol varSym = var.getSymbolTable().lookup(var.getName(), var);
 				var.getLocation()
 				//class layout.....
-				
-				
-				
+
+
+
 			}
-			
-			
+
+
 		}else if (assignment.getVariable() instanceof ArrayLocation){
 			//expr[expr]
 		}else
 		//error
 			return "error in assignment";
-		
-		
-		
-		assignment.getVariable().getSymbolTable().lookup(assignment.getVariable(), node)
-		
-		
-		
-		
-		
-		
 
-		
-		
+
+
+		assignment.getVariable().getSymbolTable().lookup(assignment.getVariable(), node)
+
+
+
+
+
+
+
+
+
 //		String comment = "# Assignment";
 //		if (assignment.getVariable() instanceof )
 //		String loc = (String)assignment.getAssignment().accept(this);
@@ -331,7 +338,7 @@ public class TranslationVisitor implements Visitor {
 //		else {
 //			
 //		}
-		*/
+		 */
 		return null;
 	}
 
@@ -360,32 +367,32 @@ public class TranslationVisitor implements Visitor {
 		String condtrans = (String) ifStatement.getCondition().accept(this);
 		int uid = LiteralUtil.uniqID();
 		totalTrans = condtrans +
-					"Compare 0,"+ getCurReg() + "\n";
+				"Compare 0,"+ getCurReg() + "\n";
 		if (ifStatement.hasElse())
 			totalTrans += "JumpTrue _else_label"+uid + "\n";
 		else
 			totalTrans += "JumpTrue _end_label"+uid + "\n";
-		
-		
+
+
 		String thenTrans = (String)  ifStatement.getOperation().accept(this);
-	
+
 		totalTrans += thenTrans;
 
 		if (ifStatement.hasElse())
 			totalTrans += "Jump _end_label"+uid+"\n";
 
-		
+
 		String elseTrans = "";
-		
+
 		if (ifStatement.hasElse()){
 			elseTrans = "_else_label"+uid+":\n";
 			elseTrans += (String)  ifStatement.getElseOperation().accept(this);
 		}
-		
+
 		totalTrans += elseTrans +
-						"_end_label"+uid+":\n";
-		
-		
+				"_end_label"+uid+":\n";
+
+
 
 		return totalTrans;
 	}
@@ -394,19 +401,19 @@ public class TranslationVisitor implements Visitor {
 	public Object visit(While whileStatement) {
 		int uid = loopCounter++;
 		String trans = "_while_test_label" + uid + ":\n";
-						    
+
 		String condTrans = (String)whileStatement.getCondition().accept(this);
-		
+
 		trans += condTrans + 
-				 "Compare 0,"+getCurReg()+"\n"+
-				 "JumpTrue _while_end_label"+uid+"\n";
-		
+				"Compare 0,"+getCurReg()+"\n"+
+				"JumpTrue _while_end_label"+uid+"\n";
+
 		String loopTrans = (String)whileStatement.getOperation().accept(this);
-		
+
 		trans += loopTrans +
-				 "Jump _while_test_label"+ uid +"\n"+
-				 "_while_end_label"+ uid +":\n";
-		
+				"Jump _while_test_label"+ uid +"\n"+
+				"_while_end_label"+ uid +":\n";
+
 		loopCounter--;
 
 		return trans;
@@ -443,14 +450,65 @@ public class TranslationVisitor implements Visitor {
 		else {
 			getVarUniqID(localVariable);
 		}
-		
+
 		return trans;
 	}
 
 	@Override
 	public Object visit(VariableLocation location) {
-		// TODO Auto-generated method stub
-		return null;
+		String trans = "";
+		if (location.isExternal()){
+			if(!(location.getLocation() instanceof This)){
+
+				String locationStr = (String)location.getLocation().accept(this);
+				trans += locationStr;
+				if (location.getLocation() instanceof VariableLocation){
+					VariableLocation expr = (VariableLocation) location.getLocation();
+					ClassLayout cl = classLayoutMap.get(expr.getTypeName());
+					trans += "MoveField "+getCurReg()+".";
+
+					Field fieldNode = cl.getFieldNameToNode().get(location.getName());
+					int offset = cl.getFieldOffMap().get(fieldNode);
+
+					trans+= offset +"," + getCurReg() + "\n";
+				}
+				if (location.getLocation() instanceof ArrayLocation){
+					ArrayLocation expr = (ArrayLocation) location.getLocation();
+
+					//	SemanticsChecks semanticChecker = new SemanticsChecks(); //needed to find type
+					//	Type type = (Type)expr.getArray().accept(semanticChecker);
+					ArrayType arrtype = (ArrayType) expr.TTtype;
+					ClassType clstype = (ClassType)arrtype.getObjType();
+					ICClass cls = (ICClass) clstype.node;
+					
+					
+					ClassLayout cl = cls.getClassLayout();
+					
+					trans += "MoveField "+getCurReg()+".";
+
+					Field fieldNode = cl.getFieldNameToNode().get(location.getName());
+					int offset = cl.getFieldOffMap().get(fieldNode);
+
+					trans+= offset +"," + getCurReg() + "\n";
+				}
+			}				
+		} else{
+			//simple form - ID or this.ID
+			Symbol sym = location.getSymbolTable().lookup(location.getName(), location);
+			if (sym.getKind() == Symbol.SymbolKind.Field){
+				String classname = sym.getNode().getSymbolTable().getId();
+				ClassLayout cl = classLayoutMap.get(classname);
+				Field field = cl.fieldNameToNode.get(location.getName());
+				int offset = cl.fieldToOffset.get(field);
+				trans += "Move this," +getCurReg()+"\n";
+				trans += "MoveField "+getCurReg()+"."+offset +"," + getCurReg() + "\n";
+			} else {
+				///not a field - just a var
+				trans += "Move "+getVarUniqID(location)+"," + getCurReg() + "\n"; kjahslfkjgaslgf
+			}
+			
+		}
+		return trans;
 	}
 
 	@Override
@@ -460,10 +518,10 @@ public class TranslationVisitor implements Visitor {
 		String indexStr = (String)location.getIndex().accept(this);
 		trans += indexStr;
 		targetReg++; // ^this stores i in A[i]
-		
+
 		String arrStr = (String)location.getArray().accept(this);
 		trans += arrStr;
-		
+
 		trans += "MoveArray "+getCurReg();
 		targetReg--;
 		trans += "["+getCurReg()+"],"+getCurReg()+"\n";
@@ -546,12 +604,13 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(NewArray newArray) {
-		targetReg++;
+		targetReg++; // save a Reg for the array itself - use the next Reg for size
 		String trans = "#new Array()\n"; 
-		trans += (String) newArray.getSize().accept(this);  
-		trans += "Add R" + targetReg + ", 1\n";
-		trans += "Library __allocateArray(R" + targetReg + "), R" + (targetReg-1) + "\n";
-		trans += "MoveArray R" + targetReg + " R" + (targetReg-1) + "[0]\n";
+		trans += (String) newArray.getSize().accept(this); 
+		trans += "Add 1,R" + targetReg + "\n";
+		trans += "Library __allocateArray(R" + targetReg + "),R" + (targetReg-1) + "\n";
+		trans += "MoveArray R" + targetReg + ",R" + (targetReg-1) + "[0]\n";
+		targetReg--; // done with size
 		return trans;
 	}
 
@@ -628,43 +687,43 @@ public class TranslationVisitor implements Visitor {
 	public Object visit(Literal literal) {
 		//get the label for this literal
 		String label = null;
-		
+
 		switch (literal.getType()){
-			case STRING: {
-				if (literalsMap.containsKey((String) literal.getValue()))
-					label = literalsMap.get((String) literal.getValue());
-				else{
-					// new literal - create a label for it
-					label = LiteralUtil.createLiteralLabel();
-					literalsMap.put( (String) literal.getValue(), label);
-				}
-				break;
+		case STRING: {
+			if (literalsMap.containsKey((String) literal.getValue()))
+				label = literalsMap.get((String) literal.getValue());
+			else{
+				// new literal - create a label for it
+				label = LiteralUtil.createLiteralLabel();
+				literalsMap.put( (String) literal.getValue(), label);
 			}
-			case FALSE:{
-				label = "0";
-				break;
-			}
-			case TRUE:{
-				label = "1";
-				break;
-			}
-			case NULL:{
-				label = "0";
-				break;
-			}
-			case INTEGER:{
-				label = literal.getValue().toString();
-				break;
-			}
-			default:{
-				label = "<ERROR- bad literal>";
-			}
+			break;
+		}
+		case FALSE:{
+			label = "0";
+			break;
+		}
+		case TRUE:{
+			label = "1";
+			break;
+		}
+		case NULL:{
+			label = "0";
+			break;
+		}
+		case INTEGER:{
+			label = literal.getValue().toString();
+			break;
+		}
+		default:{
+			label = "<ERROR- bad literal>";
+		}
 		}
 		String trans = "Move " + label;
 		targetReg++;
 		trans += ","+getCurReg()+"\n";
 
-		
+
 		return trans;
 	}
 

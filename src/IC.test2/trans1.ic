@@ -1,12 +1,14 @@
 class Mainy {
 	static void main (string[] args) {
-		//A.func1();
+
 		
 	}
 }
 
 class A {
-
+	int i;
+	
+	
 	int loop(int i) {
 		while (true)
 				return 100;
@@ -14,19 +16,19 @@ class A {
 	}
 
 	int foo(){
-		return 200;
+		int[][] j;
+		return j[0][1];
 	}
 	
-	static int array(){
-	int[] arr = new int[2];
-	return arr[1];
-
+	int array(){
+		return this.i;
 	}
 	
 }
 
 
 class B extends A {
+	A[] arr;
 
 	int foo(){
 		if(true)
@@ -35,7 +37,7 @@ class B extends A {
 			return 999;
 	}
 	
-	int goo(){
-		return foo()+1;
+	int checkArr(){
+		return arr[1].i;
 	}
 }
