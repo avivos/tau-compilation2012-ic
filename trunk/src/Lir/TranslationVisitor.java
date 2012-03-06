@@ -272,6 +272,54 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(Assignment assignment) {
+		/*
+		String trans="";
+		String valStr = (String)assignment.getAssignment().accept(this);
+		targetReg++; // meaning this ^ gets a register;
+		trans += valStr;
+		//trans += "Move " +getCurReg()+","
+		
+		//String varStr = (String)assignment.getVariable().accept(this);
+		if (assignment.getVariable() instanceof VariableLocation){
+			// ID | expr.ID
+			VariableLocation var = (VariableLocation)assignment.getVariable();
+			
+			if(!var.isExternal()){ // ID
+				trans += "Move "+getCurReg()+","+ getVarUniqID(var)+"\n";
+				targetReg--;
+				
+			}else{
+				// expr.ID
+				String varStr = (String)var.getLocation().accept(this);
+				targetReg++; // meaning this ^ gets a register;
+				trans += varStr;
+				Symbol varSym = var.getSymbolTable().lookup(var.getName(), var);
+				var.getLocation()
+				//class layout.....
+				
+				
+				
+			}
+			
+			
+		}else if (assignment.getVariable() instanceof ArrayLocation){
+			//expr[expr]
+		}else
+		//error
+			return "error in assignment";
+		
+		
+		
+		assignment.getVariable().getSymbolTable().lookup(assignment.getVariable(), node)
+		
+		
+		
+		
+		
+		
+
+		
+		
 //		String comment = "# Assignment";
 //		if (assignment.getVariable() instanceof )
 //		String loc = (String)assignment.getAssignment().accept(this);
@@ -283,7 +331,7 @@ public class TranslationVisitor implements Visitor {
 //		else {
 //			
 //		}
-		
+		*/
 		return null;
 	}
 
@@ -406,9 +454,21 @@ public class TranslationVisitor implements Visitor {
 	}
 
 	@Override
+	//this saves 2 registers !!!
 	public Object visit(ArrayLocation location) {
-		// TODO Auto-generated method stub
-		return null;
+		String trans = "";
+		String indexStr = (String)location.getIndex().accept(this);
+		trans += indexStr;
+		targetReg++; // ^this stores i in A[i]
+		
+		String arrStr = (String)location.getArray().accept(this);
+		trans += arrStr;
+		
+		trans += "MoveArray "+getCurReg();
+		targetReg--;
+		trans += "["+getCurReg()+"],"+getCurReg()+"\n";
+
+		return trans;
 	}
 
 	@Override
