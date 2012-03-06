@@ -9,7 +9,7 @@ class A {
 
 	int loop(int gfh) {
 	
-		int x;
+		int x = 1;
 		
 		while (true)
 				return 100;
