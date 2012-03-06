@@ -9,6 +9,8 @@ class A {
 
 	int loop(int gfh) {
 	
+		int x;
+		
 		while (true)
 				return 100;
 		return 999;
