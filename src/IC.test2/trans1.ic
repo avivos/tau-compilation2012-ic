@@ -1,16 +1,13 @@
 class Mainy {
 	static void main (string[] args) {
-		A.func1();
+		//A.func1();
 		
 	}
 }
 
 class A {
 
-	int loop(int gfh) {
-	
-		int x = 1;
-		
+	int loop(int i) {
 		while (true)
 				return 100;
 		return 999;
@@ -20,7 +17,10 @@ class A {
 		return 200;
 	}
 	
-	static void func1(){
+	static int array(){
+	int[] arr = new int[2];
+	return arr[1];
+
 	}
 	
 }
