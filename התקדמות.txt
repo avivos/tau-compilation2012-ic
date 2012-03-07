@@ -18,3 +18,5 @@ part 4 -
 Library __allocateArray(R3)
 		^
 4.todolist
+
+5. implement logicalbinary!!!!!

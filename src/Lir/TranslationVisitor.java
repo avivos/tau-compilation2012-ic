@@ -200,7 +200,7 @@ public class TranslationVisitor implements Visitor {
 		//LITERALS
 		String literalTrans = "";
 		for (String lit : literalsMap.keySet()){
-			literalTrans += "_" + literalsMap.get(lit) + ": " + lit + "\n";
+			literalTrans += literalsMap.get(lit) + ": " + lit + "\n";
 		}
 
 		//DVs
@@ -626,20 +626,23 @@ public class TranslationVisitor implements Visitor {
 			Iterator<Formal> formals = method.getFormals().iterator();
 			Formal formal = null;
 			Expression actual = null;
+			int counter = call.getArguments().size();
 			for (; (formals.hasNext() && actuals.hasNext()) ;){
 				actual = actuals.next();
 				formal = formals.next();
 
 				trans += (String) actual.accept(this);
-				paramsTrans += formal.getName() + "=" + getCurReg() + ",";
+				paramsTrans += formal.getName() + "=" + getCurReg();
+				if (counter > 1){
+					paramsTrans += ",";
+				}
+				counter--;
 				targetReg++;			
 			}
 			targetReg = num;
 
-			paramsTrans = paramsTrans.substring(0, paramsTrans.length()-1);
-			
 			trans += "StaticCall " + "_" + this.methodToClassName.get(method) + "_" + method.getName();
-			
+
 			//this will add a Rdummy if nothing returns
 			Symbol typesym = call.getSymbolTable().lookup(call.getName(), call);
 			if (typesym.getType() instanceof TypeTable.VoidType)
@@ -647,7 +650,7 @@ public class TranslationVisitor implements Visitor {
 			else
 				trans += "(" + paramsTrans + ")," + getCurReg() + "\n";			// method name translation
 
-			
+
 		}
 		else {
 			// translate the arguments expressions and store them to registers
@@ -657,21 +660,22 @@ public class TranslationVisitor implements Visitor {
 			paramsTrans = "";
 			Iterator<Expression> actuals = call.getArguments().iterator();
 			Expression actual = null;
+			int counter = call.getArguments().size();
 			for (; actuals.hasNext() ;){
 				actual = actuals.next();
 
 				trans += (String) actual.accept(this);
-				paramsTrans += getCurReg() + ",";
+				paramsTrans += getCurReg();
+				if (counter > 1){
+					paramsTrans += ",";
+				}
+				counter--;
 				targetReg++;			
 			}
 			targetReg = num;
 
-			paramsTrans = paramsTrans.substring(0, paramsTrans.length()-1);
-			
-
-			
 			trans += "Library " + "__" + call.getName();
-			
+
 			Symbol sym = libraryNode.getSymbolTable().lookup(call.getName(), libraryNode);
 			if (((MethodType)sym.getType()).getRetType() instanceof TypeTable.VoidType)
 				trans += "(" + paramsTrans + "),Rdummy\n";	
@@ -679,7 +683,7 @@ public class TranslationVisitor implements Visitor {
 				trans += "(" + paramsTrans + ")," + getCurReg() + "\n";			// method name translation
 
 		}
-		
+
 
 		return trans;
 	}
@@ -772,9 +776,9 @@ public class TranslationVisitor implements Visitor {
 		String trans = null;
 
 		//translate both expressions
-		String e1Translation = (String) binaryOp.getFirstOperand().accept(this);
+		String e2Translation = (String) binaryOp.getFirstOperand().accept(this);
 		targetReg++;
-		String e2Translation = (String) binaryOp.getSecondOperand().accept(this);
+		String e1Translation = (String) binaryOp.getSecondOperand().accept(this);
 
 
 		trans = e1Translation + e2Translation;
@@ -785,24 +789,24 @@ public class TranslationVisitor implements Visitor {
 			Type firstOp = (Type) binaryOp.getFirstOperand().accept(new SemanticsChecks());
 
 			if (firstOp instanceof StringType) {
-				trans += "Library __stringCat(" + (targetReg-1) + ",R" + targetReg + "),R" +(targetReg-1) + "\n";
+				trans += "Library __stringCat(" + targetReg + ",R" + (targetReg-1) + "),R" +(targetReg-1) + "\n";
 			}
 			else { //this is an integers addition operation
-				trans += "Add " + (targetReg-1) + ",R" + targetReg + "\n";
+				trans += "Add "+ targetReg + ",R" + (targetReg-1) + "\n";	
 			}
 
 		}
 		else if (operator == BinaryOps.MINUS){
-			trans += "Sub R" + (targetReg-1) + ",R" + targetReg + "\n";	
+			trans += "Sub R"+ targetReg + ",R" + (targetReg-1) + "\n";	
 		}
 		else if (operator == BinaryOps.MULTIPLY){
-			trans += "Mul R" + (targetReg-1) + ",R" + targetReg + "\n";	
+			trans += "Mul R"+ targetReg + ",R" + (targetReg-1) + "\n";	
 		}
 		else if (operator == BinaryOps.DIVIDE){
-			trans += "Div R"+ (targetReg-1) + ",R" + targetReg + "\n";	
+			trans += "Div R"+ targetReg + ",R" + (targetReg-1) + "\n";	
 		}
 		else if (operator == BinaryOps.MOD){
-			trans += "Mod R"+ (targetReg-1) + ",R" + targetReg + "\n";	
+			trans += "Mod R"+ targetReg + ",R" + (targetReg-1) + "\n";	
 		}
 		targetReg--;
 		return trans;
@@ -810,7 +814,120 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(LogicalBinaryOp binaryOp) {
-		return null;
+		String trans = "";
+		
+
+		if ((binaryOp.getOperator() == BinaryOps.LAND) || (binaryOp.getOperator() == BinaryOps.LOR)){
+			String firstOpTrans = (String) binaryOp.getFirstOperand().accept(this);
+			String comment = "";
+
+			targetReg++;
+			String secondOpTrans = (String) binaryOp.getSecondOperand().accept(this);
+			targetReg--;
+			int uid = LiteralUtil.uniqID();
+			
+			switch(binaryOp.getOperator()){
+			case LAND:
+				trans += "# e1 AND e2 \n";
+				trans += firstOpTrans;
+				trans += "Compare 0,R" + targetReg + "\n";
+				trans += "JumpTrue _end_label" + uid + "\n";
+				trans += secondOpTrans;
+				trans += "And R" + (targetReg+1) + ",R" + targetReg + "\n";
+				trans += "_end_label" + uid + "\n";
+				break;
+			case LOR:
+				trans += "# e1 OR e2 \n";
+				trans += firstOpTrans;
+				trans += "Compare 1,R" + targetReg + "\n";
+				trans += "JumpTrue _end_label" + uid + "\n";
+				trans += secondOpTrans;
+				trans += "OR R" + (targetReg+1) + ",R" + targetReg + "\n";
+				trans += "_end_label" + uid + "\n";
+				break;
+			}
+		}
+		else {
+			String secondOpTrans = (String) binaryOp.getSecondOperand().accept(this);
+			targetReg++;
+			String firstOpTrans = (String) binaryOp.getFirstOperand().accept(this);
+			
+			trans += firstOpTrans + secondOpTrans;
+			trans += "Compare R" + targetReg + ",R" + (targetReg-1) + "\n";
+			int uid = LiteralUtil.uniqID();
+			targetReg--;
+
+			switch (binaryOp.getOperator()){
+			case EQUAL:
+				trans += "# e1 == e2 \n";
+				trans += "JumpTrue _true_label" + uid + "\n";
+				trans += "Jump _false_label" + uid + "\n";
+				trans += "_true_label" + uid + ":\n";
+				trans += "Move 1," + getCurReg() + "\n";
+				trans += "Jump _end_label" + uid + "\n";
+				trans += "_false_label" + uid + ":\n";
+				trans += "Move 0," + getCurReg() + "\n";
+				trans += "_end_label" + uid + ":\n";
+				break;
+			case GT:
+				trans += "# e1 > e2 \n";
+				trans += "JumpG _true_label" + uid + "\n";
+				trans += "Jump _false_label" + uid + "\n";
+				trans += "_true_label" + uid + ":\n";
+				trans += "Move 0," + getCurReg() + "\n";
+				trans += "Jump _end_label" + uid + "\n";
+				trans += "_false_label" + uid + ":\n";
+				trans += "Move 1," + getCurReg() + "\n";
+				trans += "_end_label" + uid + ":\n";
+				break;
+			case GTE:
+				trans += "# e1 >= e2 \n";
+				trans += "JumpGE _true_label" + uid + "\n";
+				trans += "Jump _false_label" + uid + "\n";
+				trans += "_true_label" + uid + ":\n";
+				trans += "Move 0," + getCurReg() + "\n";
+				trans += "Jump _end_label" + uid + "\n";
+				trans += "_false_label" + uid + ":\n";
+				trans += "Move 1," + getCurReg() + "\n";
+				trans += "_end_label" + uid + ":\n";
+				break;
+			case LT:
+				trans += "# e1 < e2 \n";
+				trans += "JumpL _true_label" + uid + "\n";
+				trans += "Jump _false_label" + uid + "\n";
+				trans += "_true_label" + uid + ":\n";
+				trans += "Move 0," + getCurReg() + "\n";
+				trans += "Jump _end_label" + uid + "\n";
+				trans += "_false_label" + uid + ":\n";
+				trans += "Move 1," + getCurReg() + "\n";
+				trans += "_end_label" + uid + ":\n";
+				break;
+			case LTE:
+				trans += "# e1 <= e2 \n";
+				trans += "JumpLE _true_label" + uid + "\n";
+				trans += "Jump _false_label" + uid + "\n";
+				trans += "_true_label" + uid + ":\n";
+				trans += "Move 0," + getCurReg() + "\n";
+				trans += "Jump _end_label" + uid + "\n";
+				trans += "_false_label" + uid + ":\n";
+				trans += "Move 1," + getCurReg() + "\n";
+				trans += "_end_label" + uid + ":\n";
+				break;
+			case NEQUAL:
+				trans += "# e1 != e2 \n";
+				trans += "JumpTrue _true_label" + uid + "\n";
+				trans += "Jump _false_label" + uid + "\n";
+				trans += "_true_label" + uid + ":\n";
+				trans += "Move 0," + getCurReg() + "\n";
+				trans += "Jump _end_label" + uid + "\n";
+				trans += "_false_label" + uid + ":\n";
+				trans += "Move 1," + getCurReg() + "\n";
+				trans += "_end_label" + uid + ":\n";
+				break;
+			}
+		}
+
+		return trans;
 	}
 
 	@Override
@@ -827,7 +944,7 @@ public class TranslationVisitor implements Visitor {
 	@Override
 	public Object visit(LogicalUnaryOp unaryOp) {
 		if (unaryOp.getOperator() == UnaryOps.LNEG){
-			String trans = (String) unaryOp.accept(this);
+			String trans = (String) unaryOp.getOperand().accept(this);
 			return (trans + "Not "+getCurReg() + "\n");
 		}
 		return null;
@@ -885,8 +1002,8 @@ public class TranslationVisitor implements Visitor {
 
 
 	public void initLiteralsMap(){
-		this.literalsMap.put("false", "_false");
-		this.literalsMap.put("true", "_true");
+		//		this.literalsMap.put("false", "false");
+		//		this.literalsMap.put("true", "true");
 	}
 
 
@@ -905,11 +1022,16 @@ public class TranslationVisitor implements Visitor {
 		classDV = classDV + "[";
 		int counter = icClass.getClassLayout().methodToOffset.keySet().size();
 		for (Method method : icClass.getClassLayout().methodToOffset.keySet()){
-			classDV += "_" + methodToClassName.get(method) + "_" + method.getName();
+			if (method.getName().equals("main")){
+				classDV += "_ic_main";
+			}
+			else {
+				classDV += "_" + methodToClassName.get(method) + "_" + method.getName();
+			}
 			if (counter>1){
 				classDV +=",";	
 			}
-
+			counter--;
 		}
 
 		classDV += "]";

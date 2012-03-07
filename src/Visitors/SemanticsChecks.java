@@ -324,6 +324,13 @@ public class SemanticsChecks implements Visitor {
 		}
 
 		call.className = symbolTable.getClassSymbolTable().getId();
+		
+		//check if the symbol is virtual call
+		ASTNode methodnode = symbolTable.lookup(call.getName(), call).getNode();
+		if (!(methodnode instanceof VirtualMethod)){
+			throw new SemanticError("Method call undefined in this expression", call);
+		}
+		
 		call.virtualMethod = (VirtualMethod) symbolTable.lookup(call.getName(), call).getNode();
 		SymbolMethod symbol = (SymbolMethod)symbolTable.lookup(call.getName(), call);
 

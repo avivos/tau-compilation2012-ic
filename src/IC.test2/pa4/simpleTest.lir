@@ -1,0 +1,11 @@
+str0: "hello, lir\n"
+
+_DV_A: [_ic_main]
+
+_ic_main: 
+# main(string args)
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+Library __exit(0), Rdummy
+
