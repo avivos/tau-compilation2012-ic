@@ -1,0 +1,119 @@
+
+
+class Test {
+	
+	static foo(){
+		boolean b;
+		
+		println("if(true)\n");
+		if (true){
+			println("test passed\n");
+		}else {
+			println("test failed\n");
+		}
+		println();
+		
+		println("if (false) else\n");
+		if (false){
+			println("test failed\n");
+		}
+		else {
+			println("test passed");
+		}
+		println();
+		
+		println("if (false) elseif (true) else\n");
+		if (false){
+			println("test failed\n");
+		}
+		else if (true){
+			println("test passed\n");
+		}
+		else {
+			println("test failed\n");
+		}
+		println();
+		
+		println("logical operators:\n");
+		println("if (!false)\n");
+		if (!false){
+			println("test passed\n");
+		}else {
+			println("test failed\n");
+		}
+		println();
+		
+		println("if (1>2)\n");
+		if (1>2){
+			println("test passed\n");
+		}
+		else {
+			println("test failed\n");
+		}
+		println();
+		
+		println("if (1<2) else\n");
+		if (1 < 2) {
+			println("test failed\n");
+		}
+		else {
+			println("test passed\n");
+		}
+		println();
+		
+		println("if (1 <= 2)\n");
+		if (1 <= 2) {
+			println("test passed\n");
+		}
+		else {
+			println("test failed\n");
+		}
+		println();
+		
+		println ("if (2 >= 1)\n"){
+		if (2 >= 1){
+			println("test passed\n");
+		}else {
+			println("test failed\n");
+		}
+		println();
+		
+		println("if (1 == 1)\n");
+		if (1 == 1) {
+			println("test passed\n");
+		}else {
+			println("test failed\n");
+		}
+		println();
+		
+		println("if (1 != 2)\n");
+		if (1 != 2){
+			println("test passed\n");
+		}else {
+			println("test failed\n");
+		}
+		println();
+		
+		println("if (true && true)\n");
+		if (true && true){
+			println("test passed\n");
+		}else {
+			println("test failed\n");
+		}
+		println();
+		
+		println("if (false || true)\n");
+		if (fale || true){
+			println("test passed\n");
+		}else {
+			println("test failed\n");
+		}
+		println();
+		
+		println("END OF TEST\n");
+	}
+
+	static void main() {
+		
+	}
+}
