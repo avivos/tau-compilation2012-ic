@@ -168,6 +168,10 @@ public class SethiUlmanVisitor implements Visitor {
 	public Object visit(VariableLocation location) {
 		if (location.isExternal()){
 			location.getLocation().accept(this);
+			location.setWeight(location.getWeight());
+		}
+		else {
+			location.setWeight(1);
 		}
 		return null;
 	}
@@ -176,6 +180,7 @@ public class SethiUlmanVisitor implements Visitor {
 	public Object visit(ArrayLocation location) {
 		location.getArray().accept(this);
 		location.getIndex().accept(this);
+		location.setWeight(location.getArray().getWeight() + location.getIndex().getWeight());
 		return null;
 	}
 
