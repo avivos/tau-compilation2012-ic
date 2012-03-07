@@ -6,7 +6,9 @@ class Bunny {
 class Cammel {
 	Bunny rabbit;
 	
-	void hump(){
+	Bunny hump(){
+	//return "a" + "b";
+	return this.rabbit;
 	}
 }
 
