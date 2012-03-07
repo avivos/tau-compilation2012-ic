@@ -5,6 +5,9 @@ class Bunny {
 
 class Cammel {
 	Bunny rabbit;
+	
+	void hump(){
+	}
 }
 
 class StaticTestClass {
@@ -18,6 +21,7 @@ class StaticTestClass {
 		Bunny b = new Bunny();
 				
 		Cammel c = new Cammel();
+		c.hump();
 		
 		StaticTestClass.func(12, b, c);
 	
