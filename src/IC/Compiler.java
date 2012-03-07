@@ -31,6 +31,7 @@ public class Compiler
 	private static String libraryFile;
 	private static PrintWriter log = null;
 	private static PrintWriter mainState = null;
+	private static boolean printLirFlag = false;
 
 
 	public static void main(String[] args) {
@@ -73,19 +74,28 @@ public class Compiler
 					System.out.println();
 					System.out.println(TypeTable.Table.toString(args[0]));
 				}
-			
-			
-			// Starting IC->LIR Translation
-			Program program = (Program)ProgNode;
-			
-			// add the library node to the program class list
-			if (libraryFlag){
-				ICClass l = ((Program)LibNode).getClasses().get(0);
-				program.getClasses().add(l);
-			}
-			
-			TranslationVisitor translator = new TranslationVisitor();
-			program.accept(translator);
+
+
+				// Starting IC->LIR Translation
+				Program program = (Program)ProgNode;
+
+				// add the library node to the program class list
+				if (libraryFlag){
+					ICClass l = ((Program)LibNode).getClasses().get(0);
+					program.getClasses().add(l);
+				}
+
+				TranslationVisitor translator = new TranslationVisitor();
+				String trans = (String) program.accept(translator);
+
+				if (printLirFlag){
+					String lirFilename = args[0].substring(0, args[0].length()-3) + ".lir";
+					FileWriter lirFile = new FileWriter(lirFilename);
+					PrintWriter lirPrinter = new PrintWriter(lirFile);
+					lirPrinter.println(trans);
+					lirPrinter.close();
+					lirFile.close();
+				}
 			}
 
 		} catch (Exception e) {
@@ -139,18 +149,21 @@ public class Compiler
 		if (argSet.contains("-print-ast")) {
 			printASTFlag = true;
 		}
-		
+
 		//auto parse the lib file:
 		libraryFlag = true;
-		libraryFile = "bin\\IC\\Parser\\libic.sig";
+		libraryFile = "src/IC/Parser/libic.sig";
 		////////
-		
 		for (String arg : args) {
 			if (arg.startsWith("-L")){
 				printToLog("a library file was given");
 				libraryFlag = true;
 				libraryFile = arg.substring(2);
-				break;
+				continue;
+			}
+			if (arg.startsWith("-print-lir")){
+				printLirFlag = true;
+				continue;
 			}
 		}
 
