@@ -1,6 +1,20 @@
 
 class Bunny { 
-	int field;
+	int i;
+	
+ 	int func(int x, Bunny b, Cammel c){
+		int j;
+		j = this.i;
+		return 888;
+	}
+	
+	
+	 	int func2(int x, Bunny b, Cammel c){
+		int j;
+		j = 2;
+		Library.println("a");
+		return 888;
+	}
 }
 
 class Cammel {
@@ -14,9 +28,7 @@ class Cammel {
 
 class StaticTestClass {
 
-	static void func(int x, Bunny b, Cammel c){
-		return;
-	}
+
 	
 	
 	static void main (string[] args) {
@@ -25,7 +37,7 @@ class StaticTestClass {
 		Cammel c = new Cammel();
 		c.hump();
 		
-		StaticTestClass.func(12, b, c);
+		//StaticTestClass.func(12, b, c);
 	
 	}
 

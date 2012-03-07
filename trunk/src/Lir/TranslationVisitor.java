@@ -53,6 +53,7 @@ import SymbolTable.Symbol;
 import SymbolTable.Symbol.SymbolKind;
 import TypeTable.ArrayType;
 import TypeTable.ClassType;
+import TypeTable.MethodType;
 import TypeTable.StringType;
 import TypeTable.Type;
 import Visitors.SemanticsChecks;
@@ -89,10 +90,10 @@ public class TranslationVisitor implements Visitor {
 			sym = v.getSymbolTable().lookup(v.getName(), v);		
 		}
 		else if (node instanceof VariableLocation) {
-				VariableLocation v = (VariableLocation) node;
-				sym = v.getSymbolTable().lookup(v.getName(), v);
+			VariableLocation v = (VariableLocation) node;
+			sym = v.getSymbolTable().lookup(v.getName(), v);
 		}
-		
+
 		//add more ifs
 
 
@@ -134,6 +135,7 @@ public class TranslationVisitor implements Visitor {
 
 	/// manage the register count
 	int targetReg = 0;
+	private ICClass libraryNode;
 
 	String getCurReg(){
 		return "R"+targetReg;
@@ -150,7 +152,10 @@ public class TranslationVisitor implements Visitor {
 		// this map is for ClassName -> ICClass
 		Map<String, ICClass> classMap = new HashMap<String, ICClass>();
 		for (ICClass cl : program.getClasses()){
-			if (cl.getName().equals("Library")) continue;
+			if (cl.getName().equals("Library")){
+				libraryNode = cl;
+				continue;
+			}
 			classMap.put(cl.getName(), cl);
 		}
 
@@ -182,39 +187,38 @@ public class TranslationVisitor implements Visitor {
 			icClass.accept(this); // catch the returned string
 		}
 
-//		if (DebugFlag) {
-//			for (String MethodTranslation: methodTrans.values()){
-//				debugPrint("\n"+MethodTranslation);
-//			}
-//
-//		}
-		
+		//		if (DebugFlag) {
+		//			for (String MethodTranslation: methodTrans.values()){
+		//				debugPrint("\n"+MethodTranslation);
+		//			}
+		//
+		//		}
+
 		// put together the whole translation
 		String finalTrans = "";
-		
+
 		//LITERALS
 		String literalTrans = "";
 		for (String lit : literalsMap.keySet()){
 			literalTrans += "_" + literalsMap.get(lit) + ": " + lit + "\n";
 		}
-		
+
 		//DVs
 		String DVTrans = "";
 		for (String dv : dispatchVectors){
 			DVTrans += dv + "\n";
 		}
-		
+
 		finalTrans = literalTrans + "\n" + DVTrans + "\n";
-		
+
 		// add the methods translation
 		for (String MethodTranslation: methodTrans.values()){
 			finalTrans += MethodTranslation + "\n";
 		}
-		
+
 		finalTrans += main;
 
-		System.out.println(finalTrans);
-		return null;
+		return finalTrans;
 	}
 
 	@Override
@@ -276,20 +280,25 @@ public class TranslationVisitor implements Visitor {
 			}
 		}
 		comment.append(")");
+		String function = "";
+		if(!method.getName().equals("main"))
+			function = "_" + this.methodToClassName.get(method) + "_" + method.getName() + ":";
+		else
+			function += "_ic_main: \n";
 
-		String function = "_" + this.methodToClassName.get(method) + "_" + method.getName() + ":";
-		function += "\t" + comment + "\n"; 
+		function += comment + "\n"; 
 		for (Statement statement : method.getStatements()){
 			function += statement.accept(this);
 		}
 
 		if (method.getName().equals("main")){
+			function += "Library __exit(0), Rdummy\n";
 			main = function;
 		}
 		else {
 			methodTrans.put(method, function);
 		}
-		return null;
+		return function;
 	}
 
 	@Override
@@ -314,67 +323,94 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(Assignment assignment) {
-		/*
+
 		String trans="";
 		String valStr = (String)assignment.getAssignment().accept(this);
+		int valregister = targetReg;
 		targetReg++; // meaning this ^ gets a register;
 		trans += valStr;
 		//trans += "Move " +getCurReg()+","
 
 		//String varStr = (String)assignment.getVariable().accept(this);
+		//trans += varStr;
+
 		if (assignment.getVariable() instanceof VariableLocation){
 			// ID | expr.ID
-			VariableLocation var = (VariableLocation)assignment.getVariable();
+			VariableLocation location = (VariableLocation)assignment.getVariable();
 
-			if(!var.isExternal()){ // ID
-				trans += "Move "+getCurReg()+","+ getVarUniqID(var)+"\n";
-				targetReg--;
+			if (location.isExternal()){
+				if(!(location.getLocation() instanceof This)){
 
-			}else{
-				// expr.ID
-				String varStr = (String)var.getLocation().accept(this);
-				targetReg++; // meaning this ^ gets a register;
-				trans += varStr;
-				Symbol varSym = var.getSymbolTable().lookup(var.getName(), var);
-				var.getLocation()
-				//class layout.....
+					String locationStr = (String)location.getLocation().accept(this);
+					trans += locationStr;
 
+					if (location.getLocation() instanceof VariableLocation){
+						VariableLocation expr = (VariableLocation) location.getLocation();
+						ClassLayout cl = classLayoutMap.get(expr.getTypeName());
+						trans += "MoveField R"+valregister+","    +getCurReg()+".";
 
+						Field fieldNode = cl.getFieldNameToNode().get(location.getName());
+						int offset = cl.getFieldOffMap().get(fieldNode);
+
+						trans+= offset +"\n";
+					}
+					if (location.getLocation() instanceof ArrayLocation){
+						ArrayLocation expr = (ArrayLocation) location.getLocation();
+
+						ArrayType arrtype = (ArrayType) expr.TTtype;
+						ClassType clstype = (ClassType)arrtype.getObjType();
+						ICClass cls = (ICClass) clstype.node;
+
+						ClassLayout cl = cls.getClassLayout();
+
+						trans += "MoveField R"+valregister+","+getCurReg()+".";
+
+						Field fieldNode = cl.getFieldNameToNode().get(location.getName());
+						int offset = cl.getFieldOffMap().get(fieldNode);
+
+						trans+= offset + "\n";
+					}
+				}
+			}
+			if (!location.isExternal()  ||  (location.isExternal() && (location.getLocation() instanceof This) )   ){ 
+				//simple form - ID or this.ID
+				Symbol sym = location.getSymbolTable().lookup(location.getName(), location);
+				if (sym.getKind() == Symbol.SymbolKind.Field){
+					String classname = sym.getNode().getSymbolTable().getId();
+					ClassLayout cl = classLayoutMap.get(classname);
+					Field field = cl.fieldNameToNode.get(location.getName());
+					int offset = cl.fieldToOffset.get(field);
+					trans += "Move this," +getCurReg()+"\n";
+					trans += "MoveField R"+valregister+","+getCurReg()+"."+offset + "\n";
+				} else {
+					///not a field - just a var
+					trans += "Move R"+valregister+","+ getVarUniqID(location) + "\n";
+				}
 
 			}
+		}
 
 
-		}else if (assignment.getVariable() instanceof ArrayLocation){
-			//expr[expr]
-		}else
-		//error
-			return "error in assignment";
+		//or - array
+		if (assignment.getVariable() instanceof ArrayLocation){
+			ArrayLocation location = (ArrayLocation)assignment.getVariable();
+
+			String indexStr = (String)location.getIndex().accept(this);
+			trans += indexStr;
+			targetReg++; // ^this stores i in A[i]
+
+			String arrStr = (String)location.getArray().accept(this);
+			trans += arrStr;
+
+			trans += "MoveArray R"+valregister+","+getCurReg();
+			targetReg--;
+			trans += "["+getCurReg()+"]"+"\n";
+		}
 
 
 
-		assignment.getVariable().getSymbolTable().lookup(assignment.getVariable(), node)
-
-
-
-
-
-
-
-
-
-//		String comment = "# Assignment";
-//		if (assignment.getVariable() instanceof )
-//		String loc = (String)assignment.getAssignment().accept(this);
-//		targetReg++;
-//		String var = (String)assignment.getVariable().accept(this);
-//		if (assignment.getAssignment() instanceof ArrayLocation){
-//			
-//		}
-//		else {
-//			
-//		}
-		 */
-		return null;
+		targetReg--;
+		return trans;
 	}
 
 	@Override
@@ -513,10 +549,10 @@ public class TranslationVisitor implements Visitor {
 					ArrayType arrtype = (ArrayType) expr.TTtype;
 					ClassType clstype = (ClassType)arrtype.getObjType();
 					ICClass cls = (ICClass) clstype.node;
-					
-					
+
+
 					ClassLayout cl = cls.getClassLayout();
-					
+
 					trans += "MoveField "+getCurReg()+".";
 
 					Field fieldNode = cl.getFieldNameToNode().get(location.getName());
@@ -525,7 +561,7 @@ public class TranslationVisitor implements Visitor {
 					trans+= offset +"," + getCurReg() + "\n";
 				}
 			}				
-		} else{
+		} if (!location.isExternal()  ||  (location.isExternal() && (location.getLocation() instanceof This) )   ){
 			//simple form - ID or this.ID
 			Symbol sym = location.getSymbolTable().lookup(location.getName(), location);
 			if (sym.getKind() == Symbol.SymbolKind.Field){
@@ -539,7 +575,7 @@ public class TranslationVisitor implements Visitor {
 				///not a field - just a var
 				trans += "Move "+ getVarUniqID(location) +"," + getCurReg() + "\n"; //kjahslfkjgaslgf
 			}
-			
+
 		}
 		return trans;
 	}
@@ -565,52 +601,93 @@ public class TranslationVisitor implements Visitor {
 	@Override
 	public Object visit(StaticCall call) {
 		// Adi & riki
-		
+
 
 		String trans = "# static call to " + call.getClassName() + "." + call.getName() + "()\n";
 		// FORMAT: func-name({Memory=param}*
-		ClassLayout cl = classLayoutMap.get(call.getClassName());
-		Symbol sym = call.getSymbolTable().lookup(call.getName(), call);
-		ASTNode node = sym.getNode();
-		if (!(node instanceof Method)){
-			return "error finding the call's formals " + call.getName();
+		String paramsTrans = null;
+		if (!call.getClassName().equals("Library")){
+			ClassLayout cl = classLayoutMap.get(call.getClassName());
+			Symbol sym = call.getSymbolTable().lookup(call.getName(), call);
+			ASTNode node = sym.getNode();
+			if (!(node instanceof Method)){
+				return "error finding the call's formals " + call.getName();
+
+			}
+
+			Method method = (Method) node;
+
+			// translate the arguments expressions and store them to registers
+			int num = targetReg;
+
+			// run over the formal and actual params. and parse them into the FORMAT {Memory=param}*
+			paramsTrans = "";
+			Iterator<Expression> actuals = call.getArguments().iterator();
+			Iterator<Formal> formals = method.getFormals().iterator();
+			Formal formal = null;
+			Expression actual = null;
+			for (; (formals.hasNext() && actuals.hasNext()) ;){
+				actual = actuals.next();
+				formal = formals.next();
+
+				trans += (String) actual.accept(this);
+				paramsTrans += formal.getName() + "=" + getCurReg() + ",";
+				targetReg++;			
+			}
+			targetReg = num;
+
+			paramsTrans = paramsTrans.substring(0, paramsTrans.length()-1);
+			
+			trans += "StaticCall " + "_" + this.methodToClassName.get(method) + "_" + method.getName();
+			
+			//this will add a Rdummy if nothing returns
+			Symbol typesym = call.getSymbolTable().lookup(call.getName(), call);
+			if (typesym.getType() instanceof TypeTable.VoidType)
+				trans += "(" + paramsTrans + "),Rdummy\n";	
+			else
+				trans += "(" + paramsTrans + ")," + getCurReg() + "\n";			// method name translation
+
 			
 		}
-		
-		Method method = (Method) node;
-		
-		// translate the arguments expressions and store them to registers
-		int num = targetReg;
-		
-				
-		// run over the formal and actual params. and parse them into the FORMAT {Memory=param}*
-		String paramsTrans = "";
-		Iterator<Expression> actuals = call.getArguments().iterator();
-		Iterator<Formal> formals = method.getFormals().iterator();
-		Formal formal = null;
-		Expression actual = null;
-		for (; (formals.hasNext() && actuals.hasNext()) ;){
-			actual = actuals.next();
-			formal = formals.next();
+		else {
+			// translate the arguments expressions and store them to registers
+			int num = targetReg;
+
+			// run over the formal and actual params. and parse them into the FORMAT {Memory=param}*
+			paramsTrans = "";
+			Iterator<Expression> actuals = call.getArguments().iterator();
+			Expression actual = null;
+			for (; actuals.hasNext() ;){
+				actual = actuals.next();
+
+				trans += (String) actual.accept(this);
+				paramsTrans += getCurReg() + ",";
+				targetReg++;			
+			}
+			targetReg = num;
+
+			paramsTrans = paramsTrans.substring(0, paramsTrans.length()-1);
 			
-			trans += (String) actual.accept(this);
-			paramsTrans += formal.getName() + "=" + getCurReg() + ",";
-			targetReg++;			
+
+			
+			trans += "Library " + "__" + call.getName();
+			
+			Symbol sym = libraryNode.getSymbolTable().lookup(call.getName(), libraryNode);
+			if (((MethodType)sym.getType()).getRetType() instanceof TypeTable.VoidType)
+				trans += "(" + paramsTrans + "),Rdummy\n";	
+			else
+				trans += "(" + paramsTrans + ")," + getCurReg() + "\n";			// method name translation
+
 		}
-		targetReg = num;
 		
-		paramsTrans = paramsTrans.substring(0, paramsTrans.length()-1);
-		
-		trans += "StaticCall " + "_" + this.methodToClassName.get(method) + "_" + method.getName();
-		trans += "(" + paramsTrans + ")," + getCurReg();			// method name translation
-		
+
 		return trans;
 	}
 
 	@Override
 	public Object visit(VirtualCall call) {
 		String trans = "# virtual call to ." + call.getName() + "()\n";
-			
+
 		if (call.isExternal()){
 			trans += (String) call.getLocation().accept(this);			
 		}
@@ -621,8 +698,8 @@ public class TranslationVisitor implements Visitor {
 		ClassLayout cl = classLayoutMap.get(call.className);
 		Method method = cl.getmethodNameToNode().get(call.getName());
 		int offset = cl.getMethodOffMap().get(method);
-//		trans += "MoveField " + getCurReg() + ".0 ," + getCurReg() + "\n";
-		
+		//		trans += "MoveField " + getCurReg() + ".0 ," + getCurReg() + "\n";
+
 		int num = targetReg;
 		String paramsTrans = "";
 		Iterator<Expression> actuals = call.getArguments().iterator();
@@ -633,31 +710,31 @@ public class TranslationVisitor implements Visitor {
 			targetReg++;
 			actual = actuals.next();
 			formal = formals.next();
-			
+
 			trans += (String) actual.accept(this);
 			paramsTrans += formal.getName() + "=" + getCurReg() + ",";
-						
+
 		}
 		targetReg = num;
-		
+
 		trans += "VirtualCall " + getCurReg() + "." + offset + "(" ;
 		trans += paramsTrans + "),";
 		if (method.getType() instanceof PrimitiveType){
 			PrimitiveType t = (PrimitiveType)method.getType();
-				if (t.getName().equals("void")){
-					trans += "Rdummy\n";
-				}		
+			if (t.getName().equals("void")){
+				trans += "Rdummy\n";
+			}		
 		}
 		else {
 			trans += getCurReg() + "\n";
 		}
-		
+
 		return trans;
 	}
 
 	@Override
 	public Object visit(This thisExpression) {
-		
+
 		return "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 	}
 
@@ -698,7 +775,7 @@ public class TranslationVisitor implements Visitor {
 		String e1Translation = (String) binaryOp.getFirstOperand().accept(this);
 		targetReg++;
 		String e2Translation = (String) binaryOp.getSecondOperand().accept(this);
-		
+
 
 		trans = e1Translation + e2Translation;
 
@@ -706,7 +783,7 @@ public class TranslationVisitor implements Visitor {
 		if (operator == BinaryOps.PLUS){
 
 			Type firstOp = (Type) binaryOp.getFirstOperand().accept(new SemanticsChecks());
-			
+
 			if (firstOp instanceof StringType) {
 				trans += "Library __stringCat(" + (targetReg-1) + ",R" + targetReg + "),R" +(targetReg-1) + "\n";
 			}
@@ -793,7 +870,7 @@ public class TranslationVisitor implements Visitor {
 		}
 		}
 		String trans = "Move " + label;
-//		targetReg++;
+		//		targetReg++;
 		trans += ","+getCurReg()+"\n";
 
 
@@ -826,10 +903,15 @@ public class TranslationVisitor implements Visitor {
 	public String createDV(ICClass icClass){
 		String classDV = "_DV_" + icClass.getName() + ": ";
 		classDV = classDV + "[";
+		int counter = icClass.getClassLayout().methodToOffset.keySet().size();
 		for (Method method : icClass.getClassLayout().methodToOffset.keySet()){
-			classDV += "_" + methodToClassName.get(method) + "_" + method.getName() + ",";
+			classDV += "_" + methodToClassName.get(method) + "_" + method.getName();
+			if (counter>1){
+				classDV +=",";	
+			}
+
 		}
-		classDV = classDV.substring(0, classDV.length()-1);
+
 		classDV += "]";
 
 		return classDV;
