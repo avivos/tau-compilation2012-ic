@@ -2,118 +2,118 @@
 
 class Test {
 	
-	static foo(){
-		boolean b;
-		
-		println("if(true)\n");
+	static void foo(){
+	
+		Library.println("if(true)\n");
 		if (true){
-			println("test passed\n");
+			Library.println("test passed\n");
 		}else {
-			println("test failed\n");
+			Library.println("test failed\n");
 		}
-		println();
+		Library.println("\n");
 		
-		println("if (false) else\n");
+		Library.println("if (false) else\n");
 		if (false){
-			println("test failed\n");
+			Library.println("test failed\n");
 		}
 		else {
-			println("test passed");
+			Library.println("test passed");
 		}
-		println();
+		Library.println("\n");
 		
-		println("if (false) elseif (true) else\n");
+		Library.println("if (false) elseif (true) else\n");
 		if (false){
-			println("test failed\n");
+			Library.println("test failed\n");
 		}
 		else if (true){
-			println("test passed\n");
+			Library.println("test passed\n");
 		}
 		else {
-			println("test failed\n");
+			Library.println("test failed\n");
 		}
-		println();
+		Library.println("\n");
 		
-		println("logical operators:\n");
-		println("if (!false)\n");
+		Library.println("logical operators:\n");
+		Library.println("if (!false)\n");
 		if (!false){
-			println("test passed\n");
+			Library.println("test passed\n");
 		}else {
-			println("test failed\n");
+			Library.println("test failed\n");
 		}
-		println();
+		Library.println("\n");
 		
-		println("if (1>2)\n");
+		Library.println("if (1>2)\n");
 		if (1>2){
-			println("test passed\n");
+			Library.println("test failed\n");
 		}
 		else {
-			println("test failed\n");
+			Library.println("test passed\n");
 		}
-		println();
+		Library.println("\n");
 		
-		println("if (1<2) else\n");
+		Library.println("if (1<2) else\n");
 		if (1 < 2) {
-			println("test failed\n");
+			Library.println("test passed\n");
 		}
 		else {
-			println("test passed\n");
+			Library.println("test failed\n");
 		}
-		println();
+		Library.println("\n");
 		
-		println("if (1 <= 2)\n");
+		Library.println("if (1 <= 2)\n");
 		if (1 <= 2) {
-			println("test passed\n");
+			Library.println("test passed\n");
 		}
 		else {
-			println("test failed\n");
+			Library.println("test failed\n");
 		}
-		println();
+		Library.println("\n");
 		
-		println ("if (2 >= 1)\n"){
+		Library.println("if (2 >= 1)\n");
 		if (2 >= 1){
-			println("test passed\n");
+			Library.println("test passed\n");
 		}else {
-			println("test failed\n");
+			Library.println("test failed\n");
 		}
-		println();
+		Library.println("\n");
 		
-		println("if (1 == 1)\n");
+		Library.println("if (1 == 1)\n");
 		if (1 == 1) {
-			println("test passed\n");
+			Library.println("test passed\n");
 		}else {
-			println("test failed\n");
+			Library.println("test failed\n");
 		}
-		println();
+		Library.println("\n");
 		
-		println("if (1 != 2)\n");
+		Library.println("if (1 != 2)\n");
 		if (1 != 2){
-			println("test passed\n");
+			Library.println("test passed\n");
 		}else {
-			println("test failed\n");
+			Library.println("test failed\n");
 		}
-		println();
+		Library.println("\n");
 		
-		println("if (true && true)\n");
+		Library.println("if (true && true)\n");
 		if (true && true){
-			println("test passed\n");
+			Library.println("test passed\n");
 		}else {
-			println("test failed\n");
+			Library.println("test failed\n");
 		}
-		println();
+		Library.println("\n");
 		
-		println("if (false || true)\n");
-		if (fale || true){
-			println("test passed\n");
+		Library.println("if (false || true)\n");
+		if (false || true){
+			Library.println("test passed\n");
 		}else {
-			println("test failed\n");
+			Library.println("test failed\n");
 		}
-		println();
+		Library.println("\n");
 		
-		println("END OF TEST\n");
+		Library.println("END OF TEST\n");
+		return;
 	}
 
-	static void main() {
-		
+	static void main(string[] args) {
+		Test.foo();	
 	}
 }
