@@ -14,6 +14,7 @@ public class ClassLayout {
 
 	Map<Method, Integer> methodToOffset = new HashMap<Method, Integer>();
 	Map<Method, String> methodToClassName = new HashMap<Method, String>();
+	Map<String, Method> methodNameToNode = new HashMap<String, Method>();
 
 	Map<Field, Integer> fieldToOffset = new HashMap<Field, Integer>();
 	Map<String, Field> fieldNameToNode = new HashMap<String, Field>();
@@ -53,9 +54,11 @@ public class ClassLayout {
 					int index = methodToOffset.get(superMethod);
 					methodToOffset.remove(superMethod);
 					methodToOffset.put(method, new Integer(index));
+					methodNameToNode.put(method.getName(), method);
 				}
 				else {
 					methodToOffset.put(method, new Integer(i));
+					methodNameToNode.put(method.getName(), method);
 					i++;
 				}
 			}
@@ -71,6 +74,7 @@ public class ClassLayout {
 			// map methods to offsets
 			i = 0;
 			for (Method method : methodList){
+				methodNameToNode.put(method.getName(), method);
 				methodToOffset.put(method, new Integer(i));
 				i++;
 			}
@@ -89,6 +93,10 @@ public class ClassLayout {
 
 	public Map<String, Field> getFieldNameToNode() {
 		return this.fieldNameToNode;
+	}
+	
+	public Map<String, Method> getmethodNameToNode() {
+		return this.methodNameToNode;
 	}
 
 }

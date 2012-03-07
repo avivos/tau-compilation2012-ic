@@ -9,6 +9,7 @@ import java.util.Map;
 import com.sun.xml.internal.ws.wsdl.writer.document.ParamType;
 
 import IC.BinaryOps;
+import IC.DataTypes;
 import IC.LiteralTypes;
 import IC.UnaryOps;
 import IC.AST.ASTNode;
@@ -365,7 +366,7 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(CallStatement callStatement) {		
-		return callStatement.getCall().accept(this);
+		return (String) callStatement.getCall().accept(this);
 	}
 
 	@Override
@@ -524,7 +525,7 @@ public class TranslationVisitor implements Visitor {
 				trans += "MoveField "+getCurReg()+"."+offset +"," + getCurReg() + "\n";
 			} else {
 				///not a field - just a var
-				trans += "Move "+ getCurReg() +"," + getVarUniqID(location) + "\n"; //kjahslfkjgaslgf
+				trans += "Move "+ getVarUniqID(location) +"," + getCurReg() + "\n"; //kjahslfkjgaslgf
 			}
 			
 		}
@@ -596,31 +597,46 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(VirtualCall call) {
-		String trans = null;
-		if (call.getLocation()==null)
-			trans = "";
-		else
-			trans = (String) call.getLocation().accept(this);
+		String trans = "# virtual call to ." + call.getName() + "()\n";
+			
+		if (call.isExternal()){
+			trans += (String) call.getLocation().accept(this);			
+		}
 
-		// translate the arguments expressions and store them to registers
+		ClassLayout cl = classLayoutMap.get(call.className);
+		Method method = cl.getmethodNameToNode().get(call.getName());
+		int offset = cl.getMethodOffMap().get(method);
+//		trans += "MoveField " + getCurReg() + ".0 ," + getCurReg() + "\n";
+		
 		int num = targetReg;
-		for (Expression arg : call.getArguments()){
+		String paramsTrans = "";
+		Iterator<Expression> actuals = call.getArguments().iterator();
+		Iterator<Formal> formals = method.getFormals().iterator();
+		Formal formal = null;
+		Expression actual = null;
+		for (; (formals.hasNext() && actuals.hasNext()) ;){
 			targetReg++;
-			trans += arg.accept(this);
+			actual = actuals.next();
+			formal = formals.next();
+			
+			trans += (String) actual.accept(this);
+			paramsTrans += formal.getName() + "=" + getCurReg() + ",";
+						
 		}
-
-		// translate the virtualCall
-		int methodNum = 0; //= classLayoutMap.get(call.getName()).
-		trans += "VirtualCall " +getCurReg() + "." + methodNum + "(";
 		targetReg = num;
-		for (Expression arg : call.getArguments()){
-			targetReg++;
-			trans += arg.toString() +"=" + getCurReg();
+		
+		trans += "VirtualCall " + getCurReg() + "." + offset + "(" ;
+		trans += paramsTrans + "),";
+		if (method.getType() instanceof PrimitiveType){
+			PrimitiveType t = (PrimitiveType)method.getType();
+				if (t.getName().equals("void")){
+					trans += "Rdummy\n";
+				}		
 		}
-
-		trans += ")\n";
-
-
+		else {
+			trans += getCurReg() + "\n";
+		}
+		
 		return trans;
 	}
 
@@ -632,7 +648,7 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(NewClass newClass) {
-		String trans = "# new Class()" + newClass.getName();
+		String trans = "# new Class()" + newClass.getName() + "\n";
 		ClassLayout cl = classLayoutMap.get(newClass.getName());
 		int size = (cl.getFieldOffMap().size() + 1)*4;
 		trans += "Library __allocateObject(" + size + ")," + getCurReg() + "\n";
