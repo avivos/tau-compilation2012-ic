@@ -1,0 +1,33 @@
+// test recursive declerations and return values
+
+class A {
+	int 	 	f1;
+	boolean 	f2;
+	string 		f3;
+	A			f4;
+}
+
+class C {
+	
+	//should return 9999
+	void returnVoidTest(){
+		return;
+	}
+	//should return 325345
+	int returnIntTest(){
+		return 325345;
+	}
+	//should return 1
+	boolean returnBoolTest(){
+		return true;
+	}
+	//should return 0
+	boolean returnBoolTest2(){
+		return true;
+	}
+	
+	C returnUDefTest(){
+		C c = new C();
+		return c;
+	}
+}

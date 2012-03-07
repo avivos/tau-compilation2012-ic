@@ -1,0 +1,26 @@
+
+class Bunny { 
+	int field;
+}
+
+class Cammel {
+	Bunny rabbit;
+}
+
+class StaticTestClass {
+
+	static void func(int x, Bunny b, Cammel c){
+		return;
+	}
+	
+	
+	static void main (string[] args) {
+		Bunny b = new Bunny();
+				
+		Cammel c = new Cammel();
+		
+		StaticTestClass.func(12, b, c);
+	
+	}
+
+}

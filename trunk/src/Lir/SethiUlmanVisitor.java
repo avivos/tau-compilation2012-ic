@@ -1,5 +1,7 @@
 package Lir;
 
+import com.sun.org.apache.bcel.internal.classfile.Method;
+
 import IC.AST.ArrayLocation;
 import IC.AST.Assignment;
 import IC.AST.BinaryOp;
@@ -25,6 +27,7 @@ import IC.AST.NewClass;
 import IC.AST.PrimitiveType;
 import IC.AST.Program;
 import IC.AST.Return;
+import IC.AST.Statement;
 import IC.AST.StatementsBlock;
 import IC.AST.StaticCall;
 import IC.AST.StaticMethod;
@@ -41,31 +44,40 @@ public class SethiUlmanVisitor implements Visitor {
 
 	@Override
 	public Object visit(Program program) {
-		// TODO Auto-generated method stub
+		
+		// calculate the weights for every class
+		for (ICClass icClass : program.getClasses()){
+			icClass.accept(this);
+		}
 		return null;
 	}
 
 	@Override
 	public Object visit(ICClass icClass) {
-		// TODO Auto-generated method stub
+		for (IC.AST.Method method : icClass.getMethods()){
+			method.accept(this);
+		}
 		return null;
 	}
 
 	@Override
 	public Object visit(Field field) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visit(VirtualMethod method) {
-		// TODO Auto-generated method stub
+		for (Statement stmt : method.getStatements()){
+			stmt.accept(this);
+		}
 		return null;
 	}
 
 	@Override
 	public Object visit(StaticMethod method) {
-		// TODO Auto-generated method stub
+		for (Statement stmt : method.getStatements()){
+			stmt.accept(this);
+		}
 		return null;
 	}
 
@@ -77,91 +89,98 @@ public class SethiUlmanVisitor implements Visitor {
 
 	@Override
 	public Object visit(Formal formal) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visit(PrimitiveType type) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visit(UserType type) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visit(Assignment assignment) {
-		// TODO Auto-generated method stub
+		assignment.getVariable().accept(this);
+		assignment.getAssignment().accept(this);
 		return null;
 	}
 
 	@Override
 	public Object visit(CallStatement callStatement) {
-		// TODO Auto-generated method stub
+		callStatement.accept(this);
 		return null;
 	}
 
 	@Override
 	public Object visit(Return returnStatement) {
-		// TODO Auto-generated method stub
+		returnStatement.accept(this);
 		return null;
 	}
 
 	@Override
 	public Object visit(If ifStatement) {
-		// TODO Auto-generated method stub
+		ifStatement.getCondition().accept(this);
+		ifStatement.getOperation().accept(this);
+		if (ifStatement.hasElse()){
+			ifStatement.getElseOperation().accept(this);
+		}
 		return null;
 	}
 
 	@Override
 	public Object visit(While whileStatement) {
-		// TODO Auto-generated method stub
+		whileStatement.getCondition().accept(this);
+		whileStatement.getOperation().accept(this);
 		return null;
 	}
 
 	@Override
 	public Object visit(Break breakStatement) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visit(Continue continueStatement) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visit(StatementsBlock statementsBlock) {
-		// TODO Auto-generated method stub
+		for (Statement stmt : statementsBlock.getStatements()){
+			stmt.accept(this);
+		}
 		return null;
 	}
 
 	@Override
 	public Object visit(LocalVariable localVariable) {
-		// TODO Auto-generated method stub
+		if (localVariable.hasInitValue()){
+			localVariable.getInitValue().accept(this);
+		}
 		return null;
 	}
 
 	@Override
 	public Object visit(VariableLocation location) {
-		// TODO Auto-generated method stub
+		if (location.isExternal()){
+			location.getLocation().accept(this);
+		}
 		return null;
 	}
 
 	@Override
 	public Object visit(ArrayLocation location) {
-		// TODO Auto-generated method stub
+		location.getArray().accept(this);
+		location.getIndex().accept(this);
 		return null;
 	}
 
 	@Override
 	public Object visit(StaticCall call) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
