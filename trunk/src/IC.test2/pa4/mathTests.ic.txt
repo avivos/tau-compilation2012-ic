@@ -1,0 +1,41 @@
+class a {
+	static int foo(){
+
+		pirntln("test addition");
+		println(3+2);
+		println("5");
+		println("\n");
+	
+		pirntln("test addition");
+		println(3-2);
+		println("1");
+		println("\n");
+
+		pirntln("test multiplication\n");
+		println(3*2);
+		println("6");
+		println("\n");
+	
+		pirntln("test Div");
+		println(6\2);
+		println("3");
+		println("\n");
+
+		pirntln("test addition");
+		println(3+2);
+		println("5");
+		println("\n");
+
+		pirntln("test remainder");
+		println(7%5);
+		println("2");
+		println("\n");
+
+		return 1;
+	}
+	
+	static void main(){
+		A.foo();
+		return;
+	}
+}

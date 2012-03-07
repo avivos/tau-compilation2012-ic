@@ -1,0 +1,5 @@
+
+class MethodTest {
+	
+	static void printer(){
+		println
