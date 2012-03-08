@@ -352,15 +352,18 @@ public class TranslationVisitor implements Visitor {
 
 					if (location.getLocation() instanceof VariableLocation){
 						VariableLocation expr = (VariableLocation) location.getLocation();
-						
+
 						Symbol exprSym = expr.getSymbolTable().lookup(expr.getName(), expr);
 						if (!(exprSym.getType() instanceof ClassType)){
 							throw new SemanticError("Not a class type field",expr);
 						}
 						ClassType type = (ClassType) exprSym.getType();
-						
-						
+
+
 						ClassLayout cl = classLayoutMap.get(type.toString());
+						
+						//check null dereference
+						trans += ChecknullRunTImeCheck(getCurReg());
 						trans += "MoveField R"+valregister+","    +getCurReg()+".";
 
 						Field fieldNode = cl.getFieldNameToNode().get(location.getName());
@@ -377,6 +380,8 @@ public class TranslationVisitor implements Visitor {
 
 						ClassLayout cl = cls.getClassLayout();
 
+						// check null dereference
+						trans += ChecknullRunTImeCheck(getCurReg());
 						trans += "MoveField R"+valregister+","+getCurReg()+".";
 
 						Field fieldNode = cl.getFieldNameToNode().get(location.getName());
@@ -395,6 +400,8 @@ public class TranslationVisitor implements Visitor {
 					Field field = cl.fieldNameToNode.get(location.getName());
 					int offset = cl.fieldToOffset.get(field);
 					trans += "Move this," +getCurReg()+"\n";
+					// check null dereference
+					trans += ChecknullRunTImeCheck(getCurReg());
 					trans += "MoveField R"+valregister+","+getCurReg()+"."+offset + "\n";
 				} else {
 					///not a field - just a var
@@ -411,14 +418,18 @@ public class TranslationVisitor implements Visitor {
 
 			String indexStr = (String)location.getIndex().accept(this);
 			trans += indexStr;
-		//	trans += "Add 1,"+getCurReg()+"			#add 1 to index of arr\n";
+			//	trans += "Add 1,"+getCurReg()+"			#add 1 to index of arr\n";
 			targetReg++; // ^this stores i in A[i]
 
 			String arrStr = (String)location.getArray().accept(this);
 			trans += arrStr;
 			
+			// check null dereference
+			trans += ChecknullRunTImeCheck(getCurReg());
 			trans+=CheckArrayoutofbound(getCurReg(),"R"+(targetReg-1));
 
+			// check null dereference
+			trans += ChecknullRunTImeCheck(getCurReg());
 			trans += "MoveArray R"+valregister+","+getCurReg();
 			targetReg--;
 			trans += "["+getCurReg()+"]"+"\n";
@@ -499,7 +510,7 @@ public class TranslationVisitor implements Visitor {
 				"Compare 0,"+getCurReg()+"\n"+
 				"JumpTrue _while_end_label_" + loopid + "_" + uid+"\n";
 
-//		targetReg++;
+		//		targetReg++;
 		String loopTrans = (String)whileStatement.getOperation().accept(this);
 
 		trans += loopTrans +
@@ -561,9 +572,11 @@ public class TranslationVisitor implements Visitor {
 						throw new SemanticError("Not a class type field",expr);
 					}
 					ClassType type = (ClassType) exprSym.getType();
-					
-					
+
+
 					ClassLayout cl = classLayoutMap.get(type.toString());
+					// check null dereference
+					trans += ChecknullRunTImeCheck(getCurReg());
 					trans += "MoveField "+getCurReg()+".";
 
 					Field fieldNode = cl.getFieldNameToNode().get(location.getName());
@@ -583,6 +596,8 @@ public class TranslationVisitor implements Visitor {
 
 					ClassLayout cl = cls.getClassLayout();
 
+					// check null dereference
+					trans += ChecknullRunTImeCheck(getCurReg());
 					trans += "MoveField "+getCurReg()+".";
 
 					Field fieldNode = cl.getFieldNameToNode().get(location.getName());
@@ -616,13 +631,17 @@ public class TranslationVisitor implements Visitor {
 		String trans = "";
 		String indexStr = (String)location.getIndex().accept(this);
 		trans += indexStr;
-	//	trans += "Add 1,"+getCurReg()+"			#add 1 to index of arr\n";
-		
+		//	trans += "Add 1,"+getCurReg()+"			#add 1 to index of arr\n";
+
 		targetReg++; // ^this stores i in A[i]
 
 		String arrStr = (String)location.getArray().accept(this);
 		trans += arrStr;
-		
+
+		// check array out of bound
+		trans += CheckArrayoutofbound("R"+targetReg,"R"+(targetReg-1));
+		// check null dereference
+		trans += ChecknullRunTImeCheck(getCurReg());
 		trans += "MoveArray "+getCurReg();
 		targetReg--;
 		trans += "["+getCurReg()+"],"+getCurReg()+"\n";
@@ -641,14 +660,14 @@ public class TranslationVisitor implements Visitor {
 		if (!call.getClassName().equals("Library")){
 			ClassLayout cl = classLayoutMap.get(call.getClassName());
 			Method method = cl.getmethodNameToNode().get(call.getName());
-//			Symbol sym = call.getSymbolTable().lookup(call.getName(), call);
-//			ASTNode node = sym.getNode();
-//			if (!(node instanceof Method)){
-//				return "error finding the call's formals " + call.getName();
-//
-//			}
-//
-//			Method method = (Method) node;
+			//			Symbol sym = call.getSymbolTable().lookup(call.getName(), call);
+			//			ASTNode node = sym.getNode();
+			//			if (!(node instanceof Method)){
+			//				return "error finding the call's formals " + call.getName();
+			//
+			//			}
+			//
+			//			Method method = (Method) node;
 
 			// translate the arguments expressions and store them to registers
 			int num = targetReg;
@@ -757,9 +776,9 @@ public class TranslationVisitor implements Visitor {
 			counter--;
 		}
 		targetReg = num;
-		
-//		trans += "Move " + getCurReg() + ",this\n";
-		
+
+		//		trans += "Move " + getCurReg() + ",this\n";
+
 		trans += "VirtualCall " + getCurReg() + "." + offset + "(" ;
 		trans += paramsTrans + "),";
 		if ((method.getType() instanceof PrimitiveType) && (method.getType().getName().equals("void"))){
@@ -793,16 +812,19 @@ public class TranslationVisitor implements Visitor {
 		//targetReg++; // save a Reg for the array itself - use the next Reg for size
 		String trans = "#new Array()\n"; 
 		trans += (String) newArray.getSize().accept(this); 
+		trans += ChecknewArrayCheck(getCurReg());
 		targetReg++;
-		
+
 		trans += "Move R" + (targetReg-1)+ ","+ getCurReg() + "\n";
 		targetReg++;
 		trans += "Move R" + (targetReg-1)+ ","+ getCurReg() + "\n";
-		
-	//	trans += "Add 1,R" + targetReg + "\n";
+
+		//	trans += "Add 1,R" + targetReg + "\n";
 		trans += "Mul 4,"+ getCurReg() + "\n";
 		trans += "Library __allocateArray(R" + targetReg + "),R" + (targetReg-2) + "\n";
 		targetReg--; // done with size+1*4		
+		// check null dereference
+		trans += ChecknullRunTImeCheck("R" + (targetReg-1));
 		trans += "MoveArray R" + targetReg + ",R" + (targetReg-1) + "[0]\n";
 
 		targetReg--; // done with size
@@ -823,11 +845,11 @@ public class TranslationVisitor implements Visitor {
 		//translate both expressions
 		String e1Translation = (String) binaryOp.getFirstOperand().accept(this);
 		trans+= e1Translation;
-		
+
 		targetReg++;
 		String e2Translation = (String) binaryOp.getSecondOperand().accept(this);
 		trans+= e2Translation;
-		
+
 
 		BinaryOps operator = binaryOp.getOperator();	
 		if (operator == BinaryOps.PLUS){
@@ -849,9 +871,13 @@ public class TranslationVisitor implements Visitor {
 			trans += "Mul R"+ targetReg + ",R" + (targetReg-1) + "\n";	
 		}
 		else if (operator == BinaryOps.DIVIDE){
+			//Run-Time Error Check
+			trans += CheckzeroDivide(getCurReg());
 			trans += "Div R"+ targetReg + ",R" + (targetReg-1) + "\n";	
 		}
 		else if (operator == BinaryOps.MOD){
+			//Run-Time Error Check
+			trans += CheckzeroDivide(getCurReg());
 			trans += "Mod R"+ targetReg + ",R" + (targetReg-1) + "\n";	
 		}
 		targetReg--;
@@ -861,7 +887,7 @@ public class TranslationVisitor implements Visitor {
 	@Override
 	public Object visit(LogicalBinaryOp binaryOp) {
 		String trans = "";
-		
+
 
 		if ((binaryOp.getOperator() == BinaryOps.LAND) || (binaryOp.getOperator() == BinaryOps.LOR)){
 			String firstOpTrans = (String) binaryOp.getFirstOperand().accept(this);
@@ -870,7 +896,7 @@ public class TranslationVisitor implements Visitor {
 			String secondOpTrans = (String) binaryOp.getSecondOperand().accept(this);
 			targetReg--;
 			int uid = LiteralUtil.uniqID();
-			
+
 			switch(binaryOp.getOperator()){
 			case LAND:
 				trans += "# e1 AND e2 \n";
@@ -896,7 +922,7 @@ public class TranslationVisitor implements Visitor {
 			String secondOpTrans = (String) binaryOp.getSecondOperand().accept(this);
 			targetReg++;
 			String firstOpTrans = (String) binaryOp.getFirstOperand().accept(this);
-			
+
 			trans += firstOpTrans + secondOpTrans;
 			trans += "Compare R" + targetReg + ",R" + (targetReg-1) + "\n";
 			int uid = LiteralUtil.uniqID();
@@ -1046,9 +1072,12 @@ public class TranslationVisitor implements Visitor {
 	}
 
 
+	// labels for run-time errors
 	public void initLiteralsMap(){
-				this.literalsMap.put("\"IC Runtime Error: out of bounds array use\"","runtime_error_array_bounds");
-		
+		this.literalsMap.put("\"IC Runtime Error: out of bounds array use.\"","runtime_error_array_bounds");
+		this.literalsMap.put("\"IC Runtime Error: divide by zero.\"", "div_by_zero_error");
+		this.literalsMap.put("\"IC Runtime Error: negative array size.\"", "new_array_error");
+		this.literalsMap.put("\"IC Runtime Error: null dereference error.\"", "runtime_null_check");
 	}
 
 
@@ -1068,8 +1097,8 @@ public class TranslationVisitor implements Visitor {
 		Map<Method, Integer> mToOff = icClass.getClassLayout().methodToOffset;
 		Map<Integer, Method> offTom = icClass.getClassLayout().offsetToMethod;
 		int counter = mToOff.keySet().size();
-		
-		
+
+
 		for (int i = 0; i < counter; i++){
 			Method method = offTom.get(i);
 			if (method.getName().equals("main")){
@@ -1089,8 +1118,8 @@ public class TranslationVisitor implements Visitor {
 	}
 
 
-	
-	
+
+	//works
 	// recives 2 registers\vars and checks
 	private String CheckArrayoutofbound(String arr,String index) { 
 		String tr="";
@@ -1105,37 +1134,52 @@ public class TranslationVisitor implements Visitor {
 		tr+="_runtime_check_arrOutOfBound_passed"+uid+":\n"; 
 		targetReg--;
 		return tr;
-	
+
 	}
-	
+
 	private String ChecknullRunTImeCheck(String str){
 		String tr="";
-		
-			tr+=("Compare 0,"+str+"\n");
-			tr+=("JumpFalse _t7\n");
-			tr+=("Library __println(nullErr),RDummy\n");
-			tr+=("Library __exit(0),RDummy\n");
-			tr+=("_t7:\n");
-			return tr;
-	}
-	
-	private String CheckzeroDivide(String s){
-	
-		String tr="";
-		tr+=("Compare 0, "+s +"\n");
-		tr+=("JumpFalse _t4\nLibrary __println(devErr),RDummy\nLibrary  __exit(0),RDummy \n");
-		tr+="_t4:\n";
-		return tr;
-		
-	}
-	private String ChecknewArrayCheck(String str) { // negative value
-		String tr="";
-		
+		int uid = LiteralUtil.uniqID();
+		targetReg++;
 		tr+=("Compare 0,"+str+"\n");
-		tr+=("JumpGE _t3 \n");
-		tr+=(String.format("Library __println(ArrayErr),RDummy\n"));
+		tr+=("JumpFalse _passed_check_null\n");
+		tr+="Move runtime_null_check,"+getCurReg()+"\n";
+		tr+=("Library __println(" + getCurReg() +"),RDummy\n");
 		tr+=("Library __exit(0),RDummy\n");
-		tr+=("_t3:\n"); return tr;
+		tr+=("_passed_check_null:\n");
+		targetReg--;
+		return tr;
+	}
+
+	//works
+	private String CheckzeroDivide(String s){
+		int uid = LiteralUtil.uniqID();
+		targetReg++;
+		String tr="";
+		tr+=("Compare 0, "+ s +"\n");
+		tr+="JumpFalse _passed_div_zero_test" + uid + "\n";
+		tr+="Move div_by_zero_error,"+getCurReg()+"\n";
+		tr+= ("Library __println(" + getCurReg() + "),RDummy\nLibrary  __exit(0),RDummy \n");
+		tr+="_passed_div_zero_test" + uid + ":\n";
+		targetReg--;
+		return tr;
+
+	}
 	
+	//
+	private String ChecknewArrayCheck(String str) { // negative value
+		
+		int uid = LiteralUtil.uniqID();
+		String tr="";
+		targetReg++;
+		tr+=("Compare 0,"+str+"\n");
+		tr+=("JumpGE _passed_new_array_test" + uid + "\n");
+		tr+="Move new_array_error," + getCurReg() + "\n";
+		tr+="Library __println(" + getCurReg() + "),RDummy\n";
+		tr+=("Library __exit(0),RDummy\n");
+		tr+=("_passed_new_array_test" + uid + ":\n"); 
+		targetReg--;
+		return tr;
+
 	}
 }
