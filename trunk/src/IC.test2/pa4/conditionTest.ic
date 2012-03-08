@@ -196,20 +196,27 @@ class Test {
 		Library.println("");	
 		Library.println("");	
 
-		y[1] = new VirtJr();
+		y[1] = new Virtual();
 		y[1].i = 0;
 		Library.printi(y[1].bar());
 		Library.println("\n");	
 		Library.printi(y[1].barcopy());
+		
+		Library.println("");	
+		Library.println("");
 
 
-		y[1] = new VirtJr();
-		y[1].i = 0;
-		Library.printi(y[1].bar());
+		VirtJr z = new VirtJr();
+		z.i = 0;
+		Library.printi(z.bar());
 		Library.println("\n");	
-		Library.printi(y[1].barcopy());
+		Library.printi(z.barcopy());
 		Library.println("\n");	
-		Library.printi(y[1].deepbar());
+		int temp = z.deepbar();
+		Library.printi(temp);
+		Virtual vir = z;   //this is casting
+		Library.println("\n");	
+		Library.printi(vir.bar());
 
 
 	}

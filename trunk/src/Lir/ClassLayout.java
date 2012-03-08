@@ -38,7 +38,7 @@ public class ClassLayout {
 			for (Method method : superMehtodToOffset.keySet()){
 				this.methodToOffset.put(method, new Integer(superMehtodToOffset.get(method)));
 				this.offsetToMethod.put(new Integer(superMehtodToOffset.get(method)), method);
-				methodNameToNode.put(method.getName(), method);
+				this.methodNameToNode.put(method.getName(), method);
 			}
 
 			// hidden fields is not in the spec.
@@ -57,12 +57,12 @@ public class ClassLayout {
 					methodToOffset.remove(superMethod);
 					methodToOffset.put(method, new Integer(index));
 					offsetToMethod.put(new Integer(index), method);
-					methodNameToNode.put(method.getName(), method);
+					this.methodNameToNode.put(method.getName(), method);
 				}
 				else {
 					methodToOffset.put(method, new Integer(i));
 					offsetToMethod.put(new Integer(i), method);
-					methodNameToNode.put(method.getName(), method);
+					this.methodNameToNode.put(method.getName(), method);
 					i++;
 				}
 			}
@@ -78,9 +78,9 @@ public class ClassLayout {
 			// map methods to offsets
 			i = 0;
 			for (Method method : methodList){
-				methodNameToNode.put(method.getName(), method);
-				methodToOffset.put(method, new Integer(i));
-				offsetToMethod.put(new Integer(i), method);
+				this.methodNameToNode.put(method.getName(), method);
+				this.methodToOffset.put(method, new Integer(i));
+				this.offsetToMethod.put(new Integer(i), method);
 				i++;
 			}
 		}
