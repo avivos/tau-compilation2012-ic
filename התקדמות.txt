@@ -26,3 +26,9 @@ Library __allocateArray(R3)										//DONE
 7. dv table wrong order											//DONE
 
 8. loop bug - brk, cnti - jump to the right UINQ label
+
+9. לבדוק שבקריאה של פונק עם משתנים הערכים עוברים
+גם בסטטי וגם בוירטואלי
+
+10. לבדוק שבבלוק אפשר להסתיר ערכים חיצוניים
+ושאחרי הבלוק הערכים חוזרים
