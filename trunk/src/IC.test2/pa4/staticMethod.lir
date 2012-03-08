@@ -1,0 +1,87 @@
+str1: "hipsterIT"
+str0: "hipster"
+
+_DV_Hipo: [_Hipo_splash]
+_DV_A: [_A_method]
+_DV_LoopClass: [_ic_main]
+
+_Hipo_splash:	# splash(int a)
+
+# if statement
+Move var1,R1
+Move 10,R0
+Compare R1,R0
+# e1 > e2 
+JumpL _true_label1
+Jump _false_label1
+_true_label1:
+Move 1,R0
+Jump _end_label1
+_false_label1:
+Move 0,R0
+_end_label1:
+Compare 0,R0
+JumpTrue _end_label2
+Move 1,R0
+Return R0
+_end_label2:
+Move 0,R0
+Return R0
+
+_A_method:# method(int x,int y,Hipo h)
+Move str0,R0
+Move var2,R1
+MoveField R0,R1.1
+
+# if statement
+Move var3,R1
+Move var4,R2
+Add R2,R1
+Move 2,R2
+Mod R2,R1
+Move 0,R0
+Compare R1,R0
+# e1 == e2 
+JumpTrue _true_label3
+Jump _false_label3
+_true_label3:
+Move 1,R0
+Jump _end_label3
+_false_label3:
+Move 0,R0
+_end_label3:
+Compare 0,R0
+JumpTrue _else_label4
+Move var3,R0
+Move var4,R1
+Add R1,R0
+Move 2,R1
+Div R1,R0
+Move R0,var5
+# static call to Library.printi()
+Move var5,R0
+Library __printi(R0),Rdummy
+Jump _end_label4
+_else_label4:
+Move str1,R0
+Move var2,R1
+MoveField R0,R1.1
+_end_label4:
+
+_ic_main: 
+# main(string args)
+# new Class()Hipo
+Library __allocateObject(8),R0
+MoveField _DV_Hipo,R0.0
+Move R0,var6
+# static call to A.method()
+Move 2,R0
+Move 4,R1
+Move var6,R2
+StaticCall _A_method(x=R0,y=R1,h=R2),Rdummy
+# static call to Library.println()
+Move var6,R0
+MoveField R0.1,R0
+Library __println(R0),Rdummy
+Library __exit(0), Rdummy
+

@@ -1,0 +1,54 @@
+class Hipo{
+	
+	string name;
+	
+	boolean splash(int a){
+		if (a > 10){
+			return true;
+		}
+		return false;
+	}
+	
+}
+
+class B{		////BUG WITH ARG
+	
+	static void method(int x, int y, Hipo h){
+		h.name = "hipster";
+		
+		if (((x + y) % 2) == 0){
+			int w = (x + y) / 2;
+			Library.printi(w);
+		}
+		else {
+			h.name = "hipsterIT";
+		}
+	}
+	
+}
+
+class A{
+	
+	static void method(){
+		int x = 2;
+		int y = 4;
+		
+		if (((x + y) % 2) == 0){
+			int w = (x + y) / 2;
+			Library.printi(w);
+		}
+		else {
+			h.name = "hipsterIT";
+		}
+	}
+	
+}
+
+class LoopClass {
+	static void main(string[] args){
+		Hipo h = new Hipo();
+		A.method(2, 4, h);
+		Library.println(h.name);
+	}
+	
+}
