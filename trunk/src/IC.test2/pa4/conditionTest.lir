@@ -1,25 +1,38 @@
 str6: "if (false) elseif (true) else\n"
+str21: "if (false && false) else"
+str27: "test test\n"
+str18: "passed"
 str15: "if (true && true)\n"
-str8: "if (!false)\n"
-str9: "if (1>2)\n"
-str17: "END OF TEST\n"
-str0: "if(true)\n"
-str7: "logical operators:\n"
-str3: "\n"
-str5: "test passed"
+str19: ""
+str28: "END OF TEST\n"
 str10: "if (1<2) else\n"
-str14: "if (1 != 2)\n"
-str13: "if (1 == 1)\n"
-str12: "if (2 >= 1)\n"
+str5: "test passed"
+str29: "this is "
 str2: "test failed\n"
+str23: "if (true || false)"
+str1: "test passed\n"
+str20: "if (false && true) else"
+str22: "if (false || true)\n"
+str24: "test failed"
+str30: "a good test"
+str9: "if (1>2)\n"
+str8: "if (!false)\n"
+str26: "if (false || false)\n"
+str7: "logical operators:\n"
+str0: "if(true)\n"
+str3: "\n"
+str14: "if (1 != 2)\n"
+str17: "failed"
+str25: "if (true || true)\n"
+str12: "if (2 >= 1)\n"
+str13: "if (1 == 1)\n"
 str11: "if (1 <= 2)\n"
 str4: "if (false) else\n"
-str1: "test passed\n"
-str16: "if (false || true)\n"
+str16: "if (true && false) else"
 
-_DV_Test: [_Test_foo,_ic_main]
+_DV_Test: [_Test_foo,_ic_main,_Test_bar]
 
-_Test_foo:# foo()
+_Test_foo:	# foo()
 # static call to Library.println()
 Move str0,R0
 Library __println(R0),Rdummy
@@ -111,6 +124,7 @@ Library __println(R0),Rdummy
 Move 1,R1
 Move 2,R0
 Compare R1,R0
+# e1 > e2 
 JumpG _true_label6
 Jump _false_label6
 _true_label6:
@@ -139,6 +153,7 @@ Library __println(R0),Rdummy
 Move 1,R1
 Move 2,R0
 Compare R1,R0
+# e1 < e2 
 JumpL _true_label8
 Jump _false_label8
 _true_label8:
@@ -167,6 +182,7 @@ Library __println(R0),Rdummy
 Move 1,R1
 Move 2,R0
 Compare R1,R0
+# e1 <= e2 
 JumpLE _true_label10
 Jump _false_label10
 _true_label10:
@@ -195,6 +211,7 @@ Library __println(R0),Rdummy
 Move 2,R1
 Move 1,R0
 Compare R1,R0
+# e1 >= e2 
 JumpGE _true_label12
 Jump _false_label12
 _true_label12:
@@ -223,6 +240,7 @@ Library __println(R0),Rdummy
 Move 1,R1
 Move 1,R0
 Compare R1,R0
+# e1 == e2 
 JumpTrue _true_label14
 Jump _false_label14
 _true_label14:
@@ -251,6 +269,7 @@ Library __println(R0),Rdummy
 Move 1,R1
 Move 2,R0
 Compare R1,R0
+# e1 != e2 
 JumpTrue _true_label16
 Jump _false_label16
 _true_label16:
@@ -276,12 +295,13 @@ Library __println(R0),Rdummy
 # static call to Library.println()
 Move str15,R0
 Library __println(R0),Rdummy
+# e1 AND e2 
 Move 1,R0
 Compare 0,R0
 JumpTrue _end_label18
 Move 1,R1
 And R1,R0
-_end_label18
+_end_label18:
 Compare 0,R0
 JumpTrue _else_label19
 # static call to Library.println()
@@ -299,34 +319,204 @@ Library __println(R0),Rdummy
 # static call to Library.println()
 Move str16,R0
 Library __println(R0),Rdummy
-Move 0,R0
-Compare 1,R0
+# e1 AND e2 
+Move 1,R0
+Compare 0,R0
 JumpTrue _end_label20
-Move 1,R1
-OR R1,R0
-_end_label20
+Move 0,R1
+And R1,R0
+_end_label20:
 Compare 0,R0
 JumpTrue _else_label21
 # static call to Library.println()
-Move str1,R0
+Move str17,R0
 Library __println(R0),Rdummy
 Jump _end_label21
 _else_label21:
 # static call to Library.println()
-Move str2,R0
+Move str18,R0
 Library __println(R0),Rdummy
 _end_label21:
+# static call to Library.println()
+Move str19,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str20,R0
+Library __println(R0),Rdummy
+# e1 AND e2 
+Move 0,R0
+Compare 0,R0
+JumpTrue _end_label22
+Move 1,R1
+And R1,R0
+_end_label22:
+Compare 0,R0
+JumpTrue _else_label23
+# static call to Library.println()
+Move str17,R0
+Library __println(R0),Rdummy
+Jump _end_label23
+_else_label23:
+# static call to Library.println()
+Move str18,R0
+Library __println(R0),Rdummy
+_end_label23:
+# static call to Library.println()
+Move str19,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str21,R0
+Library __println(R0),Rdummy
+# e1 AND e2 
+Move 0,R0
+Compare 0,R0
+JumpTrue _end_label24
+Move 0,R1
+And R1,R0
+_end_label24:
+Compare 0,R0
+JumpTrue _else_label25
+# static call to Library.println()
+Move str17,R0
+Library __println(R0),Rdummy
+Jump _end_label25
+_else_label25:
+# static call to Library.println()
+Move str18,R0
+Library __println(R0),Rdummy
+_end_label25:
+# static call to Library.println()
+Move str19,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str22,R0
+Library __println(R0),Rdummy
+# e1 OR e2 
+Move 0,R0
+Compare 1,R0
+JumpTrue _end_label26
+Move 1,R1
+Or R1,R0
+_end_label26:
+Compare 0,R0
+JumpTrue _else_label27
+# static call to Library.println()
+Move str1,R0
+Library __println(R0),Rdummy
+Jump _end_label27
+_else_label27:
+# static call to Library.println()
+Move str2,R0
+Library __println(R0),Rdummy
+_end_label27:
 # static call to Library.println()
 Move str3,R0
 Library __println(R0),Rdummy
 # static call to Library.println()
-Move str17,R0
+Move str23,R0
+Library __println(R0),Rdummy
+# e1 OR e2 
+Move 1,R0
+Compare 1,R0
+JumpTrue _end_label28
+Move 0,R1
+Or R1,R0
+_end_label28:
+Compare 0,R0
+JumpTrue _else_label29
+# static call to Library.println()
+Move str5,R0
+Library __println(R0),Rdummy
+Jump _end_label29
+_else_label29:
+# static call to Library.println()
+Move str24,R0
+Library __println(R0),Rdummy
+_end_label29:
+# static call to Library.println()
+Move str19,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str25,R0
+Library __println(R0),Rdummy
+# e1 OR e2 
+Move 1,R0
+Compare 1,R0
+JumpTrue _end_label30
+Move 1,R1
+Or R1,R0
+_end_label30:
+Compare 0,R0
+JumpTrue _else_label31
+# static call to Library.println()
+Move str1,R0
+Library __println(R0),Rdummy
+Jump _end_label31
+_else_label31:
+# static call to Library.println()
+Move str2,R0
+Library __println(R0),Rdummy
+_end_label31:
+# static call to Library.println()
+Move str3,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str26,R0
+Library __println(R0),Rdummy
+# e1 OR e2 
+Move 0,R0
+Compare 1,R0
+JumpTrue _end_label32
+Move 0,R1
+Or R1,R0
+_end_label32:
+Compare 0,R0
+JumpTrue _else_label33
+# static call to Library.println()
+Move str2,R0
+Library __println(R0),Rdummy
+Jump _end_label33
+_else_label33:
+# static call to Library.println()
+Move str27,R0
+Library __println(R0),Rdummy
+_end_label33:
+# static call to Library.println()
+Move str3,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str28,R0
+Library __println(R0),Rdummy
+Move 2,R0
+Move 22,R1
+Div R1,R0
+Move R0,var1
+# static call to Library.printi()
+Move var1,R0
+Library __printi(R0),Rdummy
+Move str29,R0
+Move R0,var2
+Move str30,R0
+Move R0,var3
+# static call to Library.println()
+Move var2,R0
+Move var3,R1
+Library __stringCat(R0,R1),R0
 Library __println(R0),Rdummy
 Return 9999
 
+_Test_bar:	# bar()
+Move 888,R0
+Return R0
+
 _ic_main: 
 # main(string args)
-# static call to Test.foo()
-StaticCall _Test_foo(),R0
+# new Class()Test
+Library __allocateObject(4),R0
+MoveField _DV_Test,R0.0
+Move R0,var4
+# virtual call to .foo()
+Move var4,R0
+VirtualCall R0.1(),Rdummy
 Library __exit(0), Rdummy
 

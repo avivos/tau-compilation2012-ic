@@ -6,6 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import sun.java2d.SunGraphicsEnvironment.T1Filter;
+
 import com.sun.xml.internal.ws.wsdl.writer.document.ParamType;
 
 import IC.BinaryOps;
@@ -573,7 +575,7 @@ public class TranslationVisitor implements Visitor {
 				trans += "MoveField "+getCurReg()+"."+offset +"," + getCurReg() + "\n";
 			} else {
 				///not a field - just a var
-				trans += "Move "+ getVarUniqID(location) +"," + getCurReg() + "\n"; //kjahslfkjgaslgf
+				trans += "Move "+ getVarUniqID(location) +"," + getCurReg() + "\n";
 			}
 
 		}
@@ -720,14 +722,13 @@ public class TranslationVisitor implements Visitor {
 
 		}
 		targetReg = num;
-
+		
+//		trans += "Move " + getCurReg() + ",this\n";
+		
 		trans += "VirtualCall " + getCurReg() + "." + offset + "(" ;
 		trans += paramsTrans + "),";
-		if (method.getType() instanceof PrimitiveType){
-			PrimitiveType t = (PrimitiveType)method.getType();
-			if (t.getName().equals("void")){
-				trans += "Rdummy\n";
-			}		
+		if ((method.getType() instanceof PrimitiveType) && (method.getType().getName().equals("void"))){
+			trans += "Rdummy\n";					
 		}
 		else {
 			trans += getCurReg() + "\n";
@@ -773,15 +774,16 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(MathBinaryOp binaryOp) {
-		String trans = null;
+		String trans = "";
 
 		//translate both expressions
-		String e2Translation = (String) binaryOp.getFirstOperand().accept(this);
+		String e1Translation = (String) binaryOp.getFirstOperand().accept(this);
+		trans+= e1Translation;
+		
 		targetReg++;
-		String e1Translation = (String) binaryOp.getSecondOperand().accept(this);
-
-
-		trans = e1Translation + e2Translation;
+		String e2Translation = (String) binaryOp.getSecondOperand().accept(this);
+		trans+= e2Translation;
+		
 
 		BinaryOps operator = binaryOp.getOperator();	
 		if (operator == BinaryOps.PLUS){
@@ -789,10 +791,10 @@ public class TranslationVisitor implements Visitor {
 			Type firstOp = (Type) binaryOp.getFirstOperand().accept(new SemanticsChecks());
 
 			if (firstOp instanceof StringType) {
-				trans += "Library __stringCat(" + targetReg + ",R" + (targetReg-1) + "),R" +(targetReg-1) + "\n";
+				trans += "Library __stringCat(R"+ (targetReg-1) + ",R" + targetReg + "),R" +(targetReg-1) + "\n";
 			}
 			else { //this is an integers addition operation
-				trans += "Add "+ targetReg + ",R" + (targetReg-1) + "\n";	
+				trans += "Add R"+ targetReg + ",R" + (targetReg-1) + "\n";	
 			}
 
 		}
@@ -834,7 +836,7 @@ public class TranslationVisitor implements Visitor {
 				trans += "JumpTrue _end_label" + uid + "\n";
 				trans += secondOpTrans;
 				trans += "And R" + (targetReg+1) + ",R" + targetReg + "\n";
-				trans += "_end_label" + uid + "\n";
+				trans += "_end_label" + uid + ":\n";
 				break;
 			case LOR:
 				trans += "# e1 OR e2 \n";
@@ -842,8 +844,8 @@ public class TranslationVisitor implements Visitor {
 				trans += "Compare 1,R" + targetReg + "\n";
 				trans += "JumpTrue _end_label" + uid + "\n";
 				trans += secondOpTrans;
-				trans += "OR R" + (targetReg+1) + ",R" + targetReg + "\n";
-				trans += "_end_label" + uid + "\n";
+				trans += "Or R" + (targetReg+1) + ",R" + targetReg + "\n";
+				trans += "_end_label" + uid + ":\n";
 				break;
 			}
 		}
@@ -936,9 +938,9 @@ public class TranslationVisitor implements Visitor {
 		UnaryOps operator = unaryOp.getOperator();
 		if (operator == UnaryOps.UMINUS){
 			String trans = (String) unaryOp.getOperand().accept(this);
-			return (trans + "Sub 0 "+getCurReg() + "\n");
+			return (trans + "Neg "+getCurReg() + "\n");
 		}
-		return null;
+		return "UNARY OP ERROR\n";
 	}
 
 	@Override
@@ -947,7 +949,7 @@ public class TranslationVisitor implements Visitor {
 			String trans = (String) unaryOp.getOperand().accept(this);
 			return (trans + "Not "+getCurReg() + "\n");
 		}
-		return null;
+		return "UNARY OP ERROR\n";
 	}
 
 	@Override

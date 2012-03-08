@@ -1,9 +1,12 @@
 
 
 class Test {
+	int bar(){
+	return 888;
+	}
 	
-	static void foo(){
-	
+	void foo(){
+			
 		Library.println("if(true)\n");
 		if (true){
 			Library.println("test passed\n");
@@ -101,6 +104,33 @@ class Test {
 		}
 		Library.println("\n");
 		
+		Library.println("if (true && false) else");
+		if (true && false){
+			Library.println("failed");
+		}
+		else {
+			Library.println("passed");
+		}
+		Library.println("");
+		
+		Library.println("if (false && true) else");
+		if (false && true){
+			Library.println("failed");
+		}
+		else {
+			Library.println("passed");
+		}
+		Library.println("");
+		
+		Library.println("if (false && false) else");
+		if (false && false){
+			Library.println("failed");
+		}
+		else {
+			Library.println("passed");
+		}
+		Library.println("");
+		
 		Library.println("if (false || true)\n");
 		if (false || true){
 			Library.println("test passed\n");
@@ -109,11 +139,58 @@ class Test {
 		}
 		Library.println("\n");
 		
+		Library.println("if (true || false)");
+		if (true || false){
+			Library.println("test passed");
+		}else {
+			Library.println("test failed");
+		}
+		Library.println("");
+		
+		Library.println("if (true || true)\n");
+		if (true || true){
+			Library.println("test passed\n");
+		}else {
+			Library.println("test failed\n");
+		}
+		Library.println("\n");
+		
+		Library.println("if (false || false)\n");
+		if (false || false){
+			Library.println("test failed\n");
+		}else {
+			Library.println("test test\n");
+		}
+		Library.println("\n");
+		
 		Library.println("END OF TEST\n");
+		
+		
+		int w = (2/22);//-5;  + bar();
+		Library.printi(w);
+		//int y = bar();
+		
+		string a = "this is ";
+		string b = "a good test";
+		
+		Library.println(a+b);
+		
 		return;
 	}
 
 	static void main(string[] args) {
-		Test.foo();	
+		Virtual x = new Virtual();
+		
+		x.bar();
+		
+
+		
+	}
+}
+
+class Virtual(
+	int bar(){
+		
+	return 1+2;
 	}
 }

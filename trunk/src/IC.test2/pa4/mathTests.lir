@@ -1,0 +1,19 @@
+str0: "quack"
+
+_DV_A: [_ic_main,_A_foo]
+
+_A_foo:# foo()
+Move str0,R0
+Move R0,var1
+# static call to Library.print()
+Move var1,R0
+Library __print(R0),Rdummy
+Move 1,R0
+Return R0
+
+_ic_main: 
+# main(string args)
+# static call to A.foo()
+StaticCall _A_foo(),R0
+Library __exit(0), Rdummy
+

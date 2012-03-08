@@ -1,0 +1,44 @@
+class A {
+	static int foo(){
+	
+		
+		string s = "quack";
+		Library.print(s);
+/*
+		Library.println("test addition");
+		Library.println(3+2);
+		Library.println("5");
+		Library.println("\n");
+	
+		Library.pirntln("test addition");
+		Library.println(3-2);
+		Library.println("1");
+		Library.println("\n");
+
+		Library.println("test multiplication\n");
+		Library.println(3*2);
+		Library.println("6");
+		Library.println("\n");
+	
+		Library.println("test Div");
+		Library.println(6/2);
+		Library.println("3");
+		Library.println("\n");
+
+		Library.println("test addition");
+		Library.println(3+2);
+		Library.println("5");
+		Library.println("\n");
+
+		Library.println("test remainder");
+		Library.println(7%5);
+		Library.println("2");
+		Library.println("\n");
+*/
+		return 1;
+	}
+	
+	static void main(string[] args){
+		A.foo();
+	}
+}
