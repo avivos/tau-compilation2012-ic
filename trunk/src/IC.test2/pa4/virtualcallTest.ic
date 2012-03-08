@@ -195,11 +195,6 @@ class Test {
 
 		Library.println("should print 1, 2");	
 		Library.println("");	
-		
-		int len = y.length;
-		Library.printi(len);	
-		Library.println("");	
-		Library.println("should print 2");	
 
 		y[0] = new Virtual();
 		y[0].i = 0;
@@ -226,8 +221,6 @@ class Test {
 
 		Library.println("");	
 		Library.println("should print 1, 2, 3, 4");
-		
-		
 
 	}
 }

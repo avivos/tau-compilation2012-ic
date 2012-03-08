@@ -1,0 +1,38 @@
+class Test{
+	static void main(string[] args) {
+	int i;
+	int j;
+	
+	i=0;
+	j=1;
+	Library.printi(j);	
+	Library.println("");
+	Library.println("should print 1");
+	Library.println("");
+	
+	j=i;
+	Library.printi(j);	
+	Library.println("");
+	Library.println("should print 0");
+	Library.println("");
+	
+	Testfield t = new Testfield();
+	
+	t.i = 33;
+	j=t.i;
+
+	
+	
+	Testfield2 t2 = new Testfield2();
+	
+	
+	
+	}
+}
+
+class Testfield{
+	int i;
+}
+
+class Testfield2 extends Testfield{
+}
