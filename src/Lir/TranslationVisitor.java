@@ -95,8 +95,12 @@ public class TranslationVisitor implements Visitor {
 			VariableLocation v = (VariableLocation) node;
 			sym = v.getSymbolTable().lookup(v.getName(), v);
 		}
+		else if (node instanceof Formal) {
+			Formal v = (Formal) node;
+			sym = v.getSymbolTable().lookup(v.getName(), v);
+		}
 
-		//add more ifs
+		/// found sym - now get the uniq id
 
 
 		if (sym.getKind()==SymbolKind.Variable){
@@ -590,7 +594,7 @@ public class TranslationVisitor implements Visitor {
 		} if (!location.isExternal()  ||  (location.isExternal() && (location.getLocation() instanceof This) )   ){
 			//simple form - ID or this.ID
 			Symbol sym = location.getSymbolTable().lookup(location.getName(), location);
-			if (sym.getKind() == Symbol.SymbolKind.Field){
+			if (sym.getKind() == Symbol.SymbolKind.Field){ //return here adi
 				String classname = sym.getNode().getSymbolTable().getId();
 				ClassLayout cl = classLayoutMap.get(classname);
 				Field field = cl.fieldNameToNode.get(location.getName());
@@ -661,7 +665,7 @@ public class TranslationVisitor implements Visitor {
 				formal = formals.next();
 
 				trans += (String) actual.accept(this);
-				paramsTrans += formal.getName() + "=" + getCurReg();
+				paramsTrans += getVarUniqID(formal) + "=" + getCurReg();
 				if (counter > 1){
 					paramsTrans += ",";
 				}
@@ -738,14 +742,19 @@ public class TranslationVisitor implements Visitor {
 		Iterator<Formal> formals = method.getFormals().iterator();
 		Formal formal = null;
 		Expression actual = null;
+		int counter = call.getArguments().size();
 		for (; (formals.hasNext() && actuals.hasNext()) ;){
 			targetReg++;
 			actual = actuals.next();
 			formal = formals.next();
 
 			trans += (String) actual.accept(this);
-			paramsTrans += formal.getName() + "=" + getCurReg() + ",";
-
+			paramsTrans += getVarUniqID(formal) + "=" + getCurReg();
+			
+			if (counter>1){
+				paramsTrans += ",";
+			}
+			counter--;
 		}
 		targetReg = num;
 		
