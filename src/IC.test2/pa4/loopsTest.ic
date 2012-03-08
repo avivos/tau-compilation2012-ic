@@ -1,0 +1,26 @@
+class LoopClass {
+	static void main(string[] args){
+		
+		Library.println("while(true){ break}");
+		while(true){
+			Library.println("test passed");
+			break;
+		}
+		
+		Library.println("while(true){ continue break}");
+		int x = 1;
+		while(x>2){
+			Library.println("before if (x>0)");
+			if (x > 0){
+				x = x-1;
+				Library.println("before continue");
+				continue;
+				
+			}
+			Library.println("before break");
+			break;
+		}
+		Library.println("passed the test");
+	}
+
+}

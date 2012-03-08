@@ -1,18 +1,43 @@
-class T1 {
-int a;
-static void main (string[] args){}
+class Mainy {
+	static void main (string[] args) {
+
+		
+	}
+}
+
+class A {
+	int i;
+	
+	
+	int loop(int i) {
+		while (true)
+				return 100;
+		return 999;
+	}
+
+	int foo(){
+		int[][] j;
+		return j[0][1];
+	}
+	
+	int array(){
+		return this.i;
+	}
 	
 }
 
-class T2  {
 
-	void abb (string[] args){
-		T1 test;
-		test.a=3;
-		}
+class B extends A {
+	A[] arr;
+
+	int foo(){
+		if(true)
+			return 300;
+		else
+			return 999;
+	}
 	
-}
-
-class T3 {
-	int a;
+	int checkArr(){
+		return arr[1].i;
+	}
 }

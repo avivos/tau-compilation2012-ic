@@ -6,8 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import sun.java2d.SunGraphicsEnvironment.T1Filter;
-
 import com.sun.xml.internal.ws.wsdl.writer.document.ParamType;
 
 import IC.BinaryOps;
@@ -80,6 +78,7 @@ public class TranslationVisitor implements Visitor {
 
 	// this is for break and continue;
 	int loopCounter = 0;
+	int loopid = 0;
 
 	// variable names management
 	Map<Symbol, String> varMaps = new HashMap<Symbol, String>();
@@ -444,10 +443,10 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(If ifStatement) {
-		String totalTrans = null;
+		String totalTrans = "\n# if statement\n";
 		String condtrans = (String) ifStatement.getCondition().accept(this);
 		int uid = LiteralUtil.uniqID();
-		totalTrans = condtrans +
+		totalTrans += condtrans +
 				"Compare 0,"+ getCurReg() + "\n";
 		if (ifStatement.hasElse())
 			totalTrans += "JumpTrue _else_label"+uid + "\n";
@@ -480,35 +479,41 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(While whileStatement) {
-		int uid = loopCounter++;
-		String trans = "_while_test_label" + uid + ":\n";
+		int uid = ++loopCounter;														//changed loopcounter++ to ++loopcounter 
+		if (loopCounter == 1){
+			loopid++;
+		}
+		String trans = "\n# while statement\n";
+		trans += "_while_test_label_" + loopid + "_" + uid + ":\n";
 
+		int startReg = targetReg;
 		String condTrans = (String)whileStatement.getCondition().accept(this);
 
 		trans += condTrans + 
 				"Compare 0,"+getCurReg()+"\n"+
-				"JumpTrue _while_end_label"+uid+"\n";
+				"JumpTrue _while_end_label_" + loopid + "_" + uid+"\n";
 
+		targetReg++;
 		String loopTrans = (String)whileStatement.getOperation().accept(this);
 
 		trans += loopTrans +
-				"Jump _while_test_label"+ uid +"\n"+
-				"_while_end_label"+ uid +":\n";
+				"Jump _while_test_label_" + loopid + "_" + uid +"\n"+
+				"_while_end_label_" + loopid + "_" + uid +":\n";
 
-		loopCounter--;
-
+		--loopCounter;
+		targetReg = startReg;
 		return trans;
 	}
 
 	@Override
 	public Object visit(Break breakStatement) {
-		String trans = "Jump _while_end_label"+ loopCounter +"\n";
+		String trans = "Jump _while_end_label_" + loopid + "_" + loopCounter +"\n";
 		return trans;
 	}
 
 	@Override
 	public Object visit(Continue continueStatement) {
-		String trans = "Jump _while_test_label"+ loopCounter +"\n";
+		String trans = "Jump _while_test_label_" + loopid + "_"+ loopCounter +"\n";
 		return trans;
 	}
 
@@ -849,7 +854,6 @@ public class TranslationVisitor implements Visitor {
 
 		if ((binaryOp.getOperator() == BinaryOps.LAND) || (binaryOp.getOperator() == BinaryOps.LOR)){
 			String firstOpTrans = (String) binaryOp.getFirstOperand().accept(this);
-			String comment = "";
 
 			targetReg++;
 			String secondOpTrans = (String) binaryOp.getSecondOperand().accept(this);
@@ -901,46 +905,46 @@ public class TranslationVisitor implements Visitor {
 				break;
 			case GT:
 				trans += "# e1 > e2 \n";
-				trans += "JumpG _true_label" + uid + "\n";
+				trans += "JumpL _true_label" + uid + "\n";
 				trans += "Jump _false_label" + uid + "\n";
 				trans += "_true_label" + uid + ":\n";
-				trans += "Move 0," + getCurReg() + "\n";
+				trans += "Move 1," + getCurReg() + "\n";
 				trans += "Jump _end_label" + uid + "\n";
 				trans += "_false_label" + uid + ":\n";
-				trans += "Move 1," + getCurReg() + "\n";
+				trans += "Move 0," + getCurReg() + "\n";
 				trans += "_end_label" + uid + ":\n";
 				break;
 			case GTE:
 				trans += "# e1 >= e2 \n";
-				trans += "JumpGE _true_label" + uid + "\n";
+				trans += "JumpLE _true_label" + uid + "\n";
 				trans += "Jump _false_label" + uid + "\n";
 				trans += "_true_label" + uid + ":\n";
-				trans += "Move 0," + getCurReg() + "\n";
+				trans += "Move 1," + getCurReg() + "\n";
 				trans += "Jump _end_label" + uid + "\n";
 				trans += "_false_label" + uid + ":\n";
-				trans += "Move 1," + getCurReg() + "\n";
+				trans += "Move 0," + getCurReg() + "\n";
 				trans += "_end_label" + uid + ":\n";
 				break;
 			case LT:
 				trans += "# e1 < e2 \n";
-				trans += "JumpL _true_label" + uid + "\n";
+				trans += "JumpG _true_label" + uid + "\n";
 				trans += "Jump _false_label" + uid + "\n";
 				trans += "_true_label" + uid + ":\n";
-				trans += "Move 0," + getCurReg() + "\n";
+				trans += "Move 1," + getCurReg() + "\n";
 				trans += "Jump _end_label" + uid + "\n";
 				trans += "_false_label" + uid + ":\n";
-				trans += "Move 1," + getCurReg() + "\n";
+				trans += "Move 0," + getCurReg() + "\n";
 				trans += "_end_label" + uid + ":\n";
 				break;
 			case LTE:
 				trans += "# e1 <= e2 \n";
-				trans += "JumpLE _true_label" + uid + "\n";
+				trans += "JumpGE _true_label" + uid + "\n";
 				trans += "Jump _false_label" + uid + "\n";
 				trans += "_true_label" + uid + ":\n";
-				trans += "Move 0," + getCurReg() + "\n";
+				trans += "Move 1," + getCurReg() + "\n";
 				trans += "Jump _end_label" + uid + "\n";
 				trans += "_false_label" + uid + ":\n";
-				trans += "Move 1," + getCurReg() + "\n";
+				trans += "Move 0," + getCurReg() + "\n";
 				trans += "_end_label" + uid + ":\n";
 				break;
 			case NEQUAL:
