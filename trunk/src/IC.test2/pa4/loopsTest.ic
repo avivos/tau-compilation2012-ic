@@ -1,26 +1,71 @@
 class LoopClass {
 	static void main(string[] args){
-		
+
 		Library.println("while(true){ break}");
 		while(true){
 			Library.println("test passed");
 			break;
+			Library.println("test failed - after the break");
 		}
-		
+		Library.println("");
+
+
 		Library.println("while(true){ continue break}");
 		int x = 1;
-		while(x>2){
+		while(x>-1){
 			Library.println("before if (x>0)");
 			if (x > 0){
 				x = x-1;
 				Library.println("before continue");
 				continue;
-				
+				Library.println("failed test - after continue");
 			}
 			Library.println("before break");
 			break;
+			Library.println("test failed - after break");
 		}
 		Library.println("passed the test");
+
+		Library.println("######################################");
+//		boolean flag = true;
+//		int i = 1;
+//		boolean f = false;
+//		while (i>0){
+//			while (flag){
+//				
+//				while (true){
+//					
+//					Library.println("INNER-LOOP");
+//					if (!f) {
+//						f = true;
+//						continue;
+//					}
+//					Library.println("BEFORE");
+//					break;
+//				}
+//				Library.println("OUTTER-LOOP");
+//				flag = false;		
+//				i= i-1;
+//			}
+//			Library.println("OUTTER-OUTTER-LOOP");
+//		}
+		
+		
+		boolean f = false;
+		while(true){
+			Library.println("!!!");
+			if (!f){
+				Library.println("inner-loop");
+				f = true;
+				continue;
+			}
+			Library.println("after if in while");
+			break;
+		}
 	}
+
+
+
+
 
 }

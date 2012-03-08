@@ -493,7 +493,7 @@ public class TranslationVisitor implements Visitor {
 				"Compare 0,"+getCurReg()+"\n"+
 				"JumpTrue _while_end_label_" + loopid + "_" + uid+"\n";
 
-		targetReg++;
+//		targetReg++;
 		String loopTrans = (String)whileStatement.getOperation().accept(this);
 
 		trans += loopTrans +
@@ -979,7 +979,7 @@ public class TranslationVisitor implements Visitor {
 	public Object visit(LogicalUnaryOp unaryOp) {
 		if (unaryOp.getOperator() == UnaryOps.LNEG){
 			String trans = (String) unaryOp.getOperand().accept(this);
-			return (trans + "Not "+getCurReg() + "\n");
+			return (trans + "Xor 1,"+getCurReg() + "\n");
 		}
 		return "UNARY OP ERROR\n";
 	}
