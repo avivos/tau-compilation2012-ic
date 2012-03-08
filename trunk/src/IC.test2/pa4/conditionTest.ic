@@ -1,209 +1,22 @@
 
 
 class Test {
-	/*
-	int bar(){
-	return 888;
-	}
-
-	void foo(){
-
-		Library.println("if(true)\n");
-		if (true){
-			Library.println("test passed\n");
-		}else {
-			Library.println("test failed\n");
-		}
-		Library.println("\n");
-
-		Library.println("if (false) else\n");
-		if (false){
-			Library.println("test failed\n");
-		}
-		else {
-			Library.println("test passed");
-		}
-		Library.println("\n");
-
-		Library.println("if (false) elseif (true) else\n");
-		if (false){
-			Library.println("test failed\n");
-		}
-		else if (true){
-			Library.println("test passed\n");
-		}
-		else {
-			Library.println("test failed\n");
-		}
-		Library.println("\n");
-
-		Library.println("logical operators:\n");
-		Library.println("if (!false)\n");
-		if (!false){
-			Library.println("test passed\n");
-		}else {
-			Library.println("test failed\n");
-		}
-		Library.println("\n");
-
-		Library.println("if (1>2)\n");
-		if (1>2){
-			Library.println("test failed\n");
-		}
-		else {
-			Library.println("test passed\n");
-		}
-		Library.println("\n");
-
-		Library.println("if (1<2) else\n");
-		if (1 < 2) {
-			Library.println("test passed\n");
-		}
-		else {
-			Library.println("test failed\n");
-		}
-		Library.println("\n");
-
-		Library.println("if (1 <= 2)\n");
-		if (1 <= 2) {
-			Library.println("test passed\n");
-		}
-		else {
-			Library.println("test failed\n");
-		}
-		Library.println("\n");
-
-		Library.println("if (2 >= 1)\n");
-		if (2 >= 1){
-			Library.println("test passed\n");
-		}else {
-			Library.println("test failed\n");
-		}
-		Library.println("\n");
-
-		Library.println("if (1 == 1)\n");
-		if (1 == 1) {
-			Library.println("test passed\n");
-		}else {
-			Library.println("test failed\n");
-		}
-		Library.println("\n");
-
-		Library.println("if (1 != 2)\n");
-		if (1 != 2){
-			Library.println("test passed\n");
-		}else {
-			Library.println("test failed\n");
-		}
-		Library.println("\n");
-
-		Library.println("if (true && true)\n");
-		if (true && true){
-			Library.println("test passed\n");
-		}else {
-			Library.println("test failed\n");
-		}
-		Library.println("\n");
-
-		Library.println("if (true && false) else");
-		if (true && false){
-			Library.println("failed");
-		}
-		else {
-			Library.println("passed");
-		}
-		Library.println("");
-
-		Library.println("if (false && true) else");
-		if (false && true){
-			Library.println("failed");
-		}
-		else {
-			Library.println("passed");
-		}
-		Library.println("");
-
-		Library.println("if (false && false) else");
-		if (false && false){
-			Library.println("failed");
-		}
-		else {
-			Library.println("passed");
-		}
-		Library.println("");
-
-		Library.println("if (false || true)\n");
-		if (false || true){
-			Library.println("test passed\n");
-		}else {
-			Library.println("test failed\n");
-		}
-		Library.println("\n");
-
-		Library.println("if (true || false)");
-		if (true || false){
-			Library.println("test passed");
-		}else {
-			Library.println("test failed");
-		}
-		Library.println("");
-
-		Library.println("if (true || true)\n");
-		if (true || true){
-			Library.println("test passed\n");
-		}else {
-			Library.println("test failed\n");
-		}
-		Library.println("\n");
-
-		Library.println("if (false || false)\n");
-		if (false || false){
-			Library.println("test failed\n");
-		}else {
-			Library.println("test test\n");
-		}
-		Library.println("\n");
-
-		Library.println("END OF TEST\n");
-
-
-		int w = (2/22);//-5;  + bar();
-		Library.printi(w);
-		//int y = bar();
-
-		string a = "this is ";
-		string b = "a good test";
-
-		Library.println(a+b);
-
-		return;
-	}
-
-
-
-	 */
 
 
 	static void main(string[] args) {
 		Virtual x = new Virtual();
 		Virtual[] y = new Virtual[2];
 
-		x.i = 0;
-		Library.printi(x.bar());
-		Library.println("");	
-		Library.printi(x.barcopy());
-
-		Library.println("should print 1, 2");	
-		Library.println("");	
 		
-		int len = y.length;
-		Library.printi(len);	
+		y[2] = x;
+		Library.printi(y[2].bar());
 		Library.println("");	
-		Library.println("should print 2");	
-
-		y[0] = new Virtual();
+		Library.println("should print 1");		
+		
+/*		
+		
 		y[0].i = 0;
-		Library.printi(y[0].bar());
+		
 		Library.println("\n");	
 		Library.printi(y[0].barcopy());
 		
@@ -227,7 +40,7 @@ class Test {
 		Library.println("");	
 		Library.println("should print 1, 2, 3, 4");
 		
-		
+	*/	
 
 	}
 }

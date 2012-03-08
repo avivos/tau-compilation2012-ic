@@ -412,6 +412,8 @@ public class TranslationVisitor implements Visitor {
 
 			String arrStr = (String)location.getArray().accept(this);
 			trans += arrStr;
+			
+			trans+=CheckArrayoutofbound(getCurReg(),"R"+(targetReg-1));
 
 			trans += "MoveArray R"+valregister+","+getCurReg();
 			targetReg--;
@@ -1036,8 +1038,8 @@ public class TranslationVisitor implements Visitor {
 
 
 	public void initLiteralsMap(){
-		//		this.literalsMap.put("false", "false");
-		//		this.literalsMap.put("true", "true");
+				this.literalsMap.put("\"IC Runtime Error: out of bounds array use\"","runtime_error_array_bounds");
+		
 	}
 
 
@@ -1075,5 +1077,56 @@ public class TranslationVisitor implements Visitor {
 		classDV += "]";
 
 		return classDV;
+	}
+
+
+	
+	
+	// recives 2 registers\vars and checks
+	private String CheckArrayoutofbound(String arr,String index) { 
+		String tr="";
+		int uid = LiteralUtil.uniqID();
+		targetReg++;
+		tr+="ArrayLength "+arr+","+getCurReg()+"\n";
+		tr+="Compare "+getCurReg()+","+index+"\n";
+		tr+="JumpL _runtime_check_arrOutOfBound_passed"+uid+"\n";
+		tr+="Move runtime_error_array_bounds,"+getCurReg()+"\n";
+		tr+="Library __println("+getCurReg()+"),RDummy\n";
+		tr+="Library __exit(0),RDummy\n";
+		tr+="_runtime_check_arrOutOfBound_passed"+uid+":\n"; 
+		targetReg--;
+		return tr;
+	
+	}
+	
+	private String ChecknullRunTImeCheck(String str){
+		String tr="";
+		
+			tr+=("Compare 0,"+str+"\n");
+			tr+=("JumpFalse _t7\n");
+			tr+=("Library __println(nullErr),RDummy\n");
+			tr+=("Library __exit(0),RDummy\n");
+			tr+=("_t7:\n");
+			return tr;
+	}
+	
+	private String CheckzeroDivide(String s){
+	
+		String tr="";
+		tr+=("Compare 0, "+s +"\n");
+		tr+=("JumpFalse _t4\nLibrary __println(devErr),RDummy\nLibrary  __exit(0),RDummy \n");
+		tr+="_t4:\n";
+		return tr;
+		
+	}
+	private String ChecknewArrayCheck(String str) { // negative value
+		String tr="";
+		
+		tr+=("Compare 0,"+str+"\n");
+		tr+=("JumpGE _t3 \n");
+		tr+=(String.format("Library __println(ArrayErr),RDummy\n"));
+		tr+=("Library __exit(0),RDummy\n");
+		tr+=("_t3:\n"); return tr;
+	
 	}
 }

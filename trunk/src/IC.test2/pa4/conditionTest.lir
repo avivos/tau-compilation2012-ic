@@ -1,8 +1,6 @@
-str3: "\n"
-str4: "should print 1, 2, 3, 4"
-str2: "should print 2"
+runtime_error_array_bounds: "IC Runtime Error: the out of bounds array use"
+str1: "should print 1"
 str0: ""
-str1: "should print 1, 2"
 
 _DV_Test: [_ic_main]
 _DV_Virtual: [_Virtual_bar,_Virtual_barcopy]
@@ -45,119 +43,29 @@ Mul 4,R2
 Library __allocateArray(R2),R0
 MoveArray R1,R0[0]
 Move R0,var2
-Move 0,R0
-Move var1,R1
-MoveField R0,R1.1
-# static call to Library.printi()
-# virtual call to .bar()
 Move var1,R0
-VirtualCall R0.0(),R0
-Library __printi(R0),Rdummy
-# static call to Library.println()
-Move str0,R0
-Library __println(R0),Rdummy
-# static call to Library.printi()
-# virtual call to .barcopy()
-Move var1,R0
-VirtualCall R0.1(),R0
-Library __printi(R0),Rdummy
-# static call to Library.println()
-Move str1,R0
-Library __println(R0),Rdummy
-# static call to Library.println()
-Move str0,R0
-Library __println(R0),Rdummy
-Move var2,R0
-ArrayLength R0,R0
-Move R0,var3
-# static call to Library.printi()
-Move var3,R0
-Library __printi(R0),Rdummy
-# static call to Library.println()
-Move str0,R0
-Library __println(R0),Rdummy
-# static call to Library.println()
-Move str2,R0
-Library __println(R0),Rdummy
-# new Class()Virtual
-Library __allocateObject(8),R0
-MoveField _DV_Virtual,R0.0
-Move 0,R1
+Move 2,R1
 Move var2,R2
+ArrayLength R2,R3
+Compare R3,R1
+JumpL _runtime_check_arrOutOfBound_passed1
+Move runtime_error_array_bounds,R3
+Library __println(R3),RDummy
+Library __exit(0),RDummy
+_runtime_check_arrOutOfBound_passed1:
 MoveArray R0,R2[R1]
-Move 0,R0
-Move 0,R1
-Move var2,R2
-MoveArray R2[R1],R1
-MoveField R0,R1.1
 # static call to Library.printi()
 # virtual call to .bar()
-Move 0,R0
+Move 2,R0
 Move var2,R1
 MoveArray R1[R0],R0
 VirtualCall R0.0(),R0
-Library __printi(R0),Rdummy
-# static call to Library.println()
-Move str3,R0
-Library __println(R0),Rdummy
-# static call to Library.printi()
-# virtual call to .barcopy()
-Move 0,R0
-Move var2,R1
-MoveArray R1[R0],R0
-VirtualCall R0.1(),R0
 Library __printi(R0),Rdummy
 # static call to Library.println()
 Move str0,R0
 Library __println(R0),Rdummy
 # static call to Library.println()
 Move str1,R0
-Library __println(R0),Rdummy
-# new Class()VirtJr
-Library __allocateObject(8),R0
-MoveField _DV_VirtJr,R0.0
-Move R0,var4
-Move 0,R0
-Move var4,R1
-MoveField R0,R1.1
-# static call to Library.printi()
-# virtual call to .bar()
-Move var4,R0
-VirtualCall R0.0(),R0
-Library __printi(R0),Rdummy
-# static call to Library.println()
-Move str3,R0
-Library __println(R0),Rdummy
-# static call to Library.printi()
-# virtual call to .barcopy()
-Move var4,R0
-VirtualCall R0.1(),R0
-Library __printi(R0),Rdummy
-# static call to Library.println()
-Move str3,R0
-Library __println(R0),Rdummy
-# virtual call to .deepbar()
-Move var4,R0
-VirtualCall R0.2(),R0
-Move R0,var5
-# static call to Library.printi()
-Move var5,R0
-Library __printi(R0),Rdummy
-Move var4,R0
-Move R0,var6
-# static call to Library.println()
-Move str3,R0
-Library __println(R0),Rdummy
-# static call to Library.printi()
-# virtual call to .bar()
-Move var6,R0
-VirtualCall R0.0(),R0
-Library __printi(R0),Rdummy
-# static call to Library.println()
-Move str0,R0
-Library __println(R0),Rdummy
-# static call to Library.println()
-Move str4,R0
 Library __println(R0),Rdummy
 Library __exit(0), Rdummy
 
