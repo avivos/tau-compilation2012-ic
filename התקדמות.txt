@@ -12,17 +12,17 @@ to do list -
 ===========================================================================================
 part 4 -
 ==========================================
-1. the DV table is printed in reverse order     
-2. the main func should be printed last
-3. should library func have space ? - NOO
-Library __allocateArray(R3)
+1. the DV table is printed in reverse order     				//DONE
+2. the main func should be printed last							//DONE 
+3. should library func have space ? - NOO						//DONE
+Library __allocateArray(R3)										//DONE
 		^
 4.todolist
 
-5. implement logicalbinary!!!!!
+5. implement logicalbinary!!!!!									//DONE
 
-6. a[0] should translate to a[1]
+6. a[0] should translate to a[1]								//WRONG+DONE
 
-7. dv table wrong order
+7. dv table wrong order											//DONE
 
 8. loop bug - brk, cnti - jump to the right UINQ label

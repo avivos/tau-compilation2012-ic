@@ -634,14 +634,15 @@ public class TranslationVisitor implements Visitor {
 		String paramsTrans = null;
 		if (!call.getClassName().equals("Library")){
 			ClassLayout cl = classLayoutMap.get(call.getClassName());
-			Symbol sym = call.getSymbolTable().lookup(call.getName(), call);
-			ASTNode node = sym.getNode();
-			if (!(node instanceof Method)){
-				return "error finding the call's formals " + call.getName();
-
-			}
-
-			Method method = (Method) node;
+			Method method = cl.getmethodNameToNode().get(call.getName());
+//			Symbol sym = call.getSymbolTable().lookup(call.getName(), call);
+//			ASTNode node = sym.getNode();
+//			if (!(node instanceof Method)){
+//				return "error finding the call's formals " + call.getName();
+//
+//			}
+//
+//			Method method = (Method) node;
 
 			// translate the arguments expressions and store them to registers
 			int num = targetReg;
@@ -670,8 +671,7 @@ public class TranslationVisitor implements Visitor {
 			trans += "StaticCall " + "_" + this.methodToClassName.get(method) + "_" + method.getName();
 
 			//this will add a Rdummy if nothing returns
-			Symbol typesym = call.getSymbolTable().lookup(call.getName(), call);
-			if (typesym.getType() instanceof TypeTable.VoidType)
+			if (method.getType().getName() == "void")
 				trans += "(" + paramsTrans + "),Rdummy\n";	
 			else
 				trans += "(" + paramsTrans + ")," + getCurReg() + "\n";			// method name translation

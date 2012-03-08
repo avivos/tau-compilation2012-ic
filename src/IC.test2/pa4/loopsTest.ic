@@ -1,3 +1,5 @@
+
+
 class LoopClass {
 	static void main(string[] args){
 
@@ -27,31 +29,31 @@ class LoopClass {
 		Library.println("passed the test");
 
 		Library.println("######################################");
-//		boolean flag = true;
-//		int i = 1;
-//		boolean f = false;
-//		while (i>0){
-//			while (flag){
-//				
-//				while (true){
-//					
-//					Library.println("INNER-LOOP");
-//					if (!f) {
-//						f = true;
-//						continue;
-//					}
-//					Library.println("BEFORE");
-//					break;
-//				}
-//				Library.println("OUTTER-LOOP");
-//				flag = false;		
-//				i= i-1;
-//			}
-//			Library.println("OUTTER-OUTTER-LOOP");
-//		}
-		
-		
+		boolean flag = true;
+		int i = 1;
 		boolean f = false;
+		while (i>0){
+			while (flag){
+				
+				while (true){
+					
+					Library.println("INNER-LOOP");
+					if (!f) {
+						f = true;
+						continue;
+					}
+					Library.println("BEFORE");
+					break;
+				}
+				Library.println("OUTTER-LOOP");
+				flag = false;		
+				i= i-1;
+			}
+			Library.println("OUTTER-OUTTER-LOOP");
+		}
+		
+		
+		f = false;
 		while(true){
 			Library.println("!!!");
 			if (!f){
