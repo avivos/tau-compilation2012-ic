@@ -16,16 +16,16 @@ Move this,R0
 MoveField R0.1,R0
 Return R0
 
-_VirtJr_deepbar:	# deepbar()
-# virtual call to .barcopy()
-Move this, R0
-VirtualCall R0.1(),R0
-Return R0
-
 _Virtual_barcopy:	# barcopy()
 # virtual call to .bar()
 Move this,R0
 VirtualCall R0.0(),R0
+Return R0
+
+_VirtJr_deepbar:	# deepbar()
+# virtual call to .barcopy()
+Move this, R0
+VirtualCall R0.1(),R0
 Return R0
 
 _ic_main: 
@@ -93,22 +93,22 @@ Move var2,R1
 MoveArray R1[R0],R0
 VirtualCall R0.1(),R0
 Library __printi(R0),Rdummy
-# new Class()Virtual
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+# new Class()VirtJr
 Library __allocateObject(8),R0
-MoveField _DV_Virtual,R0.0
-Move 1,R1
-Move var2,R2
-MoveArray R0,R2[R1]
+MoveField _DV_VirtJr,R0.0
+Move R0,var3
 Move 0,R0
-Move 1,R1
-Move var2,R2
-MoveArray R2[R1],R1
+Move var3,R1
 MoveField R0,R1.1
 # static call to Library.printi()
 # virtual call to .bar()
-Move 1,R0
-Move var2,R1
-MoveArray R1[R0],R0
+Move var3,R0
 VirtualCall R0.0(),R0
 Library __printi(R0),Rdummy
 # static call to Library.println()
@@ -116,13 +116,25 @@ Move str1,R0
 Library __println(R0),Rdummy
 # static call to Library.printi()
 # virtual call to .barcopy()
-Move 1,R0
-Move var2,R1
-MoveArray R1[R0],R0
+Move var3,R0
 VirtualCall R0.1(),R0
 Library __printi(R0),Rdummy
 # static call to Library.println()
 Move str1,R0
 Library __println(R0),Rdummy
+# virtual call to .deepbar()
+Move var3,R0
+VirtualCall R0.2(),R0
+Move R0,var4
+# static call to Library.printi()
+Move var4,R0
+Library __printi(R0),Rdummy
+Move var3,R0
+Move R0,var5
+# static call to Library.printi()
+# virtual call to .bar()
+Move var5,R0
+VirtualCall R0.0(),R0
+Library __printi(R0),Rdummy
 Library __exit(0), Rdummy
 

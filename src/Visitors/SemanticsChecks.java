@@ -105,7 +105,7 @@ public class SemanticsChecks implements Visitor {
 		if (varType == null)
 			throw new SemanticError("Variable type is undefined in the assignment", assgin);
 		
-		if (!varType.SubType(locType))
+		if (!locType.SubType(varType))
 			throw new SemanticError("Type mismatch in assignment", assgin);
 		return null;
 	}
