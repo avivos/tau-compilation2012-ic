@@ -20,3 +20,9 @@ Library __allocateArray(R3)
 4.todolist
 
 5. implement logicalbinary!!!!!
+
+6. a[0] should translate to a[1]
+
+7. dv table wrong order
+
+8. loop bug - brk, cnti - jump to the right UINQ label

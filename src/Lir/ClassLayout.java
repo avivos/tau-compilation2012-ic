@@ -13,6 +13,7 @@ public class ClassLayout {
 	String className = null;
 
 	Map<Method, Integer> methodToOffset = new HashMap<Method, Integer>();
+	Map<Integer, Method> offsetToMethod = new HashMap<Integer, Method>();
 	Map<Method, String> methodToClassName = new HashMap<Method, String>();
 	Map<String, Method> methodNameToNode = new HashMap<String, Method>();
 
@@ -36,6 +37,7 @@ public class ClassLayout {
 			Map<String, Method> methodNameToNode = new HashMap<String, Method>();
 			for (Method method : superMehtodToOffset.keySet()){
 				this.methodToOffset.put(method, new Integer(superMehtodToOffset.get(method)));
+				this.offsetToMethod.put(new Integer(superMehtodToOffset.get(method)), method);
 				methodNameToNode.put(method.getName(), method);
 			}
 
@@ -47,17 +49,19 @@ public class ClassLayout {
 				i++;
 			}
 
-			i = methodToOffset.size()+1;
+			i = methodToOffset.size();
 			for (Method method : methodList){
 				Method superMethod = methodNameToNode.get(method.getName());
 				if (superMethod != null){
 					int index = methodToOffset.get(superMethod);
 					methodToOffset.remove(superMethod);
 					methodToOffset.put(method, new Integer(index));
+					offsetToMethod.put(new Integer(index), method);
 					methodNameToNode.put(method.getName(), method);
 				}
 				else {
 					methodToOffset.put(method, new Integer(i));
+					offsetToMethod.put(new Integer(i), method);
 					methodNameToNode.put(method.getName(), method);
 					i++;
 				}
@@ -76,6 +80,7 @@ public class ClassLayout {
 			for (Method method : methodList){
 				methodNameToNode.put(method.getName(), method);
 				methodToOffset.put(method, new Integer(i));
+				offsetToMethod.put(new Integer(i), method);
 				i++;
 			}
 		}

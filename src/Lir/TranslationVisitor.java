@@ -13,6 +13,7 @@ import com.sun.xml.internal.ws.wsdl.writer.document.ParamType;
 import IC.BinaryOps;
 import IC.DataTypes;
 import IC.LiteralTypes;
+import IC.SemanticError;
 import IC.UnaryOps;
 import IC.AST.ASTNode;
 import IC.AST.ArrayLocation;
@@ -348,7 +349,15 @@ public class TranslationVisitor implements Visitor {
 
 					if (location.getLocation() instanceof VariableLocation){
 						VariableLocation expr = (VariableLocation) location.getLocation();
-						ClassLayout cl = classLayoutMap.get(expr.getTypeName());
+						
+						Symbol exprSym = expr.getSymbolTable().lookup(expr.getName(), expr);
+						if (!(exprSym.getType() instanceof ClassType)){
+							throw new SemanticError("Not a class type field",expr);
+						}
+						ClassType type = (ClassType) exprSym.getType();
+						
+						
+						ClassLayout cl = classLayoutMap.get(type.toString());
 						trans += "MoveField R"+valregister+","    +getCurReg()+".";
 
 						Field fieldNode = cl.getFieldNameToNode().get(location.getName());
@@ -534,8 +543,15 @@ public class TranslationVisitor implements Visitor {
 				String locationStr = (String)location.getLocation().accept(this);
 				trans += locationStr;
 				if (location.getLocation() instanceof VariableLocation){
-					VariableLocation expr = (VariableLocation) location.getLocation();
-					ClassLayout cl = classLayoutMap.get(expr.getTypeName());
+					VariableLocation expr = (VariableLocation) location.getLocation(); 
+					Symbol exprSym = expr.getSymbolTable().lookup(expr.getName(), expr);
+					if (!(exprSym.getType() instanceof ClassType)){
+						throw new SemanticError("Not a class type field",expr);
+					}
+					ClassType type = (ClassType) exprSym.getType();
+					
+					
+					ClassLayout cl = classLayoutMap.get(type.toString());
 					trans += "MoveField "+getCurReg()+".";
 
 					Field fieldNode = cl.getFieldNameToNode().get(location.getName());
@@ -740,7 +756,7 @@ public class TranslationVisitor implements Visitor {
 	@Override
 	public Object visit(This thisExpression) {
 
-		return "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+		return "Move this,"+getCurReg()+"\n";
 	}
 
 	@Override
@@ -755,12 +771,21 @@ public class TranslationVisitor implements Visitor {
 
 	@Override
 	public Object visit(NewArray newArray) {
-		targetReg++; // save a Reg for the array itself - use the next Reg for size
+		//targetReg++; // save a Reg for the array itself - use the next Reg for size
 		String trans = "#new Array()\n"; 
 		trans += (String) newArray.getSize().accept(this); 
+		targetReg++;
+		
+		trans += "Move R" + (targetReg-1)+ ","+ getCurReg() + "\n";
+		targetReg++;
+		trans += "Move R" + (targetReg-1)+ ","+ getCurReg() + "\n";
+		
 		trans += "Add 1,R" + targetReg + "\n";
-		trans += "Library __allocateArray(R" + targetReg + "),R" + (targetReg-1) + "\n";
+		trans += "Mul 4,"+ getCurReg() + "\n";
+		trans += "Library __allocateArray(R" + targetReg + "),R" + (targetReg-2) + "\n";
+		targetReg--; // done with size+1*4		
 		trans += "MoveArray R" + targetReg + ",R" + (targetReg-1) + "[0]\n";
+
 		targetReg--; // done with size
 		return trans;
 	}
@@ -1022,18 +1047,22 @@ public class TranslationVisitor implements Visitor {
 	public String createDV(ICClass icClass){
 		String classDV = "_DV_" + icClass.getName() + ": ";
 		classDV = classDV + "[";
-		int counter = icClass.getClassLayout().methodToOffset.keySet().size();
-		for (Method method : icClass.getClassLayout().methodToOffset.keySet()){
+		Map<Method, Integer> mToOff = icClass.getClassLayout().methodToOffset;
+		Map<Integer, Method> offTom = icClass.getClassLayout().offsetToMethod;
+		int counter = mToOff.keySet().size();
+		
+		
+		for (int i = 0; i < counter; i++){
+			Method method = offTom.get(i);
 			if (method.getName().equals("main")){
 				classDV += "_ic_main";
 			}
 			else {
 				classDV += "_" + methodToClassName.get(method) + "_" + method.getName();
 			}
-			if (counter>1){
+			if (i < counter-1){
 				classDV +=",";	
-			}
-			counter--;
+			}			
 		}
 
 		classDV += "]";
