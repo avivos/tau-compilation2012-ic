@@ -1,0 +1,13 @@
+class Test{
+	void foo(int param){
+		Library.printi(param);
+		Library.println("");
+		return;
+	}
+	
+	static void main(string[] args){
+		Test x = new Test();
+		x.foo(777);
+		
+	}
+}

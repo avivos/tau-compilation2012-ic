@@ -1,0 +1,26 @@
+runtime_error_array_bounds: "IC Runtime Error: out of bounds array use"
+str0: ""
+
+_DV_Test: [_Test_foo,_ic_main]
+
+_Test_foo:	# foo(int param)
+# static call to Library.printi()
+Move var1,R0
+Library __printi(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+Return 9999
+
+_ic_main: 
+# main(string args)
+# new Class()Test
+Library __allocateObject(4),R0
+MoveField _DV_Test,R0.0
+Move R0,var2
+# virtual call to .foo()
+Move var2,R0
+Move 777,R1
+VirtualCall R0.0(var1=R1),Rdummy
+Library __exit(0), Rdummy
+
