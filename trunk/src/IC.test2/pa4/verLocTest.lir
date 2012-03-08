@@ -1,0 +1,186 @@
+str4: "should print 44"
+str2: "should print 0"
+str6: "should print "
+str1: "should print 1"
+str7: "should print 4"
+str5: "#####################################"
+str0: ""
+str3: "should print 33"
+
+_DV_Test: [_ic_main]
+_DV_Testfield: []
+_DV_Testfield2: []
+
+_ic_main: 
+# main(string args)
+Move 0,R0
+Move R0,var1
+Move 1,R0
+Move R0,var2
+# static call to Library.printi()
+Move var2,R0
+Library __printi(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str1,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+Move var1,R0
+Move R0,var2
+# static call to Library.printi()
+Move var2,R0
+Library __printi(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str2,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+# new Class()Testfield
+Library __allocateObject(8),R0
+MoveField _DV_Testfield,R0.0
+Move R0,var3
+Move 33,R0
+Move var3,R1
+MoveField R0,R1.1
+Move var3,R0
+MoveField R0.1,R0
+Move R0,var2
+# static call to Library.printi()
+Move var2,R0
+Library __printi(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str3,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+# new Class()Testfield2
+Library __allocateObject(8),R0
+MoveField _DV_Testfield2,R0.0
+Move R0,var4
+Move 44,R0
+Move var4,R1
+MoveField R0,R1.1
+Move var4,R0
+MoveField R0.1,R0
+Move R0,var2
+# static call to Library.printi()
+Move var2,R0
+Library __printi(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str4,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str5,R0
+Library __println(R0),Rdummy
+#new Array()
+Move 5,R0
+Move R0,R1
+Move R1,R2
+Mul 4,R2
+Library __allocateArray(R2),R0
+MoveArray R1,R0[0]
+Move R0,var5
+Move 0,R0
+Move 0,R1
+Move var5,R2
+MoveArray R0,R2[R1]
+# static call to Library.println()
+Move str2,R0
+Library __println(R0),Rdummy
+# static call to Library.printi()
+Move 0,R0
+Move var5,R1
+MoveArray R1[R0],R0
+Library __printi(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+Move 1,R0
+Move 1,R1
+Move var5,R2
+MoveArray R0,R2[R1]
+# static call to Library.println()
+Move str1,R0
+Library __println(R0),Rdummy
+# static call to Library.printi()
+Move 0,R0
+Move var5,R1
+MoveArray R1[R0],R0
+Move 1,R1
+Move var5,R2
+MoveArray R2[R1],R1
+Add R1,R0
+Library __printi(R0),Rdummy
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+#new Array()
+Move 2,R0
+Move R0,R1
+Move R1,R2
+Mul 4,R2
+Library __allocateArray(R2),R0
+MoveArray R1,R0[0]
+Move R0,var6
+Move 1,R0
+Move 0,R1
+Move var6,R2
+MoveArray R0,R2[R1]
+Move 0,R0
+Move 1,R1
+Move var6,R2
+MoveArray R0,R2[R1]
+Move 4,R0
+Move 2,R1
+Move var5,R2
+MoveArray R0,R2[R1]
+# static call to Library.println()
+Move str6,R0
+Library __println(R0),Rdummy
+
+# if statement
+# e1 OR e2 
+Move 0,R0
+Move var6,R1
+MoveArray R1[R0],R0
+Compare 1,R0
+JumpTrue _end_label1
+Move 1,R1
+Move var6,R2
+MoveArray R2[R1],R1
+Or R1,R0
+_end_label1:
+Compare 0,R0
+JumpTrue _end_label2
+# static call to Library.println()
+Move str7,R0
+Library __println(R0),Rdummy
+# static call to Library.printi()
+Move 2,R0
+Move var5,R1
+MoveArray R1[R0],R0
+Library __printi(R0),Rdummy
+_end_label2:
+# static call to Library.println()
+Move str0,R0
+Library __println(R0),Rdummy
+Library __exit(0), Rdummy
+

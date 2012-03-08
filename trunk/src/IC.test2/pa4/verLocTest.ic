@@ -20,10 +20,45 @@ class Test{
 	
 	t.i = 33;
 	j=t.i;
+	Library.printi(j);	
+	Library.println("");
+	Library.println("should print 33");
+	Library.println("");
 
 	
 	
 	Testfield2 t2 = new Testfield2();
+	t2.i = 44;
+	j=t2.i;
+	
+	Library.printi(j);	
+	Library.println("");
+	Library.println("should print 44");
+	Library.println("");
+	Library.println("#####################################");
+	
+	int[] arr = new int[5];
+	
+	arr[0] = 0;
+	Library.println("should print 0");
+	Library.printi(arr[0]);
+	Library.println("");
+	
+	arr[1] = 1;
+	Library.println("should print 1");
+	Library.printi(arr[0]+arr[1]);
+	Library.println("");
+	
+	boolean[] bool = new boolean[2];
+	bool[0] = true;
+	bool[1] = false;
+	arr[2] = 4;
+	if (bool[0] || bool[1]){
+		Library.println("should print 4");
+		Library.printi(arr[2]);	
+	}
+	Library.println("");
+	
 	
 	
 	
