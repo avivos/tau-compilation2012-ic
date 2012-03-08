@@ -1,22 +1,13 @@
-runtime_error_array_bounds: "IC Runtime Error: the out of bounds array use"
+runtime_error_array_bounds: "IC Runtime Error: out of bounds array use."
+new_array_error: "IC Runtime Error: negative array size."
 str1: "should print 1"
+div_by_zero_error: "IC Runtime Error: divide by zero."
 str0: ""
+runtime_null_check: "IC Runtime Error: null dereference error."
 
 _DV_Test: [_ic_main]
 _DV_Virtual: [_Virtual_bar,_Virtual_barcopy]
 _DV_VirtJr: [_Virtual_bar,_Virtual_barcopy,_VirtJr_deepbar]
-
-_VirtJr_deepbar:	# deepbar()
-# virtual call to .barcopy()
-Move this, R0
-VirtualCall R0.1(),R0
-Return R0
-
-_Virtual_barcopy:	# barcopy()
-# virtual call to .bar()
-Move this,R0
-VirtualCall R0.0(),R0
-Return R0
 
 _Virtual_bar:	# bar()
 Move this,R0
@@ -29,38 +20,38 @@ Move this,R0
 MoveField R0.1,R0
 Return R0
 
+_Virtual_barcopy:	# barcopy()
+# virtual call to .bar()
+Move this,R0
+VirtualCall R0.0(),R0
+Return R0
+
+_VirtJr_deepbar:	# deepbar()
+# virtual call to .barcopy()
+Move this, R0
+VirtualCall R0.1(),R0
+Return R0
+
 _ic_main: 
 # main(string args)
 # new Class()Virtual
 Library __allocateObject(8),R0
 MoveField _DV_Virtual,R0.0
 Move R0,var1
-#new Array()
-Move 2,R0
-Move R0,R1
-Move R1,R2
-Mul 4,R2
-Library __allocateArray(R2),R0
-MoveArray R1,R0[0]
+Move 0,R0
 Move R0,var2
-Move var1,R0
-Move 2,R1
-Move var2,R2
-ArrayLength R2,R3
-Compare R3,R1
-JumpL _runtime_check_arrOutOfBound_passed1
-Move runtime_error_array_bounds,R3
-Library __println(R3),RDummy
-Library __exit(0),RDummy
-_runtime_check_arrOutOfBound_passed1:
-MoveArray R0,R2[R1]
-# static call to Library.printi()
-# virtual call to .bar()
-Move 2,R0
+Move 0,R0
 Move var2,R1
-MoveArray R1[R0],R0
-VirtualCall R0.0(),R0
-Library __printi(R0),Rdummy
+Compare 0,R1
+JumpFalse _passed_check_null
+Move runtime_null_check,R2
+Library __println(R2),RDummy
+Library __exit(0),RDummy
+_passed_check_null:
+MoveField R0,R1.1
+Move var2,R0
+MoveField R0.1,R0
+Move R0,var3
 # static call to Library.println()
 Move str0,R0
 Library __println(R0),Rdummy

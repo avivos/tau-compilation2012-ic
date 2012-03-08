@@ -5,11 +5,15 @@ class Test {
 
 	static void main(string[] args) {
 		Virtual x = new Virtual();
-		Virtual[] y = new Virtual[2];
-
+		//Virtual[] y = new Virtual[-22];
+		Virtual b = null;
+		b.i = 0;
+		int e = b.i;
 		
-		y[2] = x;
-		Library.printi(y[2].bar());
+		//y[2] = x;
+		//x= y[2];
+		//int num = 2/0;
+		//Library.printi(y[2].bar());
 		Library.println("");	
 		Library.println("should print 1");		
 		
