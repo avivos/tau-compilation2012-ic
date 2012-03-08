@@ -1,10 +1,18 @@
-str6: "passed the test"
+str10: "passed the test"
+str13: "inner-loop"
+str9: "test failed - after break"
+str11: "######################################"
+str6: "before continue"
+str3: ""
+str12: "!!!"
 str1: "test passed"
-str2: "while(true){ continue break}"
+str4: "while(true){ continue break}"
+str7: "failed test - after continue"
+str14: "after if in while"
 str0: "while(true){ break}"
-str4: "before continue"
-str5: "before break"
-str3: "before if (x>0)"
+str8: "before break"
+str5: "before if (x>0)"
+str2: "test failed - after the break"
 
 _DV_LoopClass: [_ic_main]
 
@@ -20,13 +28,19 @@ Move 1,R0
 Compare 0,R0
 JumpTrue _while_end_label_1_1
 # static call to Library.println()
-Move str1,R1
-Library __println(R1),Rdummy
+Move str1,R0
+Library __println(R0),Rdummy
 Jump _while_end_label_1_1
+# static call to Library.println()
+Move str2,R0
+Library __println(R0),Rdummy
 Jump _while_test_label_1_1
 _while_end_label_1_1:
 # static call to Library.println()
-Move str2,R0
+Move str3,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str4,R0
 Library __println(R0),Rdummy
 Move 1,R0
 Move R0,var1
@@ -34,55 +48,95 @@ Move R0,var1
 # while statement
 _while_test_label_2_1:
 Move var1,R1
-Move 2,R0
+Move 1,R0
+Neg R0
 Compare R1,R0
 # e1 > e2 
-JumpG _true_label1
+JumpL _true_label1
 Jump _false_label1
 _true_label1:
-Move 0,R0
+Move 1,R0
 Jump _end_label1
 _false_label1:
-Move 1,R0
+Move 0,R0
 _end_label1:
 Compare 0,R0
 JumpTrue _while_end_label_2_1
 # static call to Library.println()
-Move str3,R1
-Library __println(R1),Rdummy
+Move str5,R0
+Library __println(R0),Rdummy
 
 # if statement
-Move var1,R2
-Move 0,R1
-Compare R2,R1
+Move var1,R1
+Move 0,R0
+Compare R1,R0
 # e1 > e2 
-JumpG _true_label2
+JumpL _true_label2
 Jump _false_label2
 _true_label2:
-Move 0,R1
+Move 1,R0
 Jump _end_label2
 _false_label2:
-Move 1,R1
+Move 0,R0
 _end_label2:
-Compare 0,R1
+Compare 0,R0
 JumpTrue _end_label3
-Move var1,R1
-Move 1,R2
-Sub R2,R1
-Move R1,var1
-# static call to Library.println()
-Move str4,R1
-Library __println(R1),Rdummy
-Jump _while_test_label_2_1
-_end_label3:
-# static call to Library.println()
-Move str5,R1
-Library __println(R1),Rdummy
-Jump _while_end_label_2_1
-Jump _while_test_label_2_1
-_while_end_label_2_1:
+Move var1,R0
+Move 1,R1
+Sub R1,R0
+Move R0,var1
 # static call to Library.println()
 Move str6,R0
 Library __println(R0),Rdummy
+Jump _while_test_label_2_1
+# static call to Library.println()
+Move str7,R0
+Library __println(R0),Rdummy
+_end_label3:
+# static call to Library.println()
+Move str8,R0
+Library __println(R0),Rdummy
+Jump _while_end_label_2_1
+# static call to Library.println()
+Move str9,R0
+Library __println(R0),Rdummy
+Jump _while_test_label_2_1
+_while_end_label_2_1:
+# static call to Library.println()
+Move str10,R0
+Library __println(R0),Rdummy
+# static call to Library.println()
+Move str11,R0
+Library __println(R0),Rdummy
+Move 0,R0
+Move R0,var2
+
+# while statement
+_while_test_label_3_1:
+Move 1,R0
+Compare 0,R0
+JumpTrue _while_end_label_3_1
+# static call to Library.println()
+Move str12,R0
+Library __println(R0),Rdummy
+
+# if statement
+Move var2,R0
+Xor 1,R0
+Compare 0,R0
+JumpTrue _end_label4
+# static call to Library.println()
+Move str13,R0
+Library __println(R0),Rdummy
+Move 1,R0
+Move R0,var2
+Jump _while_test_label_3_1
+_end_label4:
+# static call to Library.println()
+Move str14,R0
+Library __println(R0),Rdummy
+Jump _while_end_label_3_1
+Jump _while_test_label_3_1
+_while_end_label_3_1:
 Library __exit(0), Rdummy
 
