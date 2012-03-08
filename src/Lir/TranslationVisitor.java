@@ -408,6 +408,7 @@ public class TranslationVisitor implements Visitor {
 
 			String indexStr = (String)location.getIndex().accept(this);
 			trans += indexStr;
+		//	trans += "Add 1,"+getCurReg()+"			#add 1 to index of arr\n";
 			targetReg++; // ^this stores i in A[i]
 
 			String arrStr = (String)location.getArray().accept(this);
@@ -604,11 +605,13 @@ public class TranslationVisitor implements Visitor {
 		String trans = "";
 		String indexStr = (String)location.getIndex().accept(this);
 		trans += indexStr;
+	//	trans += "Add 1,"+getCurReg()+"			#add 1 to index of arr\n";
+		
 		targetReg++; // ^this stores i in A[i]
 
 		String arrStr = (String)location.getArray().accept(this);
 		trans += arrStr;
-
+		
 		trans += "MoveArray "+getCurReg();
 		targetReg--;
 		trans += "["+getCurReg()+"],"+getCurReg()+"\n";
@@ -780,7 +783,7 @@ public class TranslationVisitor implements Visitor {
 		targetReg++;
 		trans += "Move R" + (targetReg-1)+ ","+ getCurReg() + "\n";
 		
-		trans += "Add 1,R" + targetReg + "\n";
+	//	trans += "Add 1,R" + targetReg + "\n";
 		trans += "Mul 4,"+ getCurReg() + "\n";
 		trans += "Library __allocateArray(R" + targetReg + "),R" + (targetReg-2) + "\n";
 		targetReg--; // done with size+1*4		
@@ -793,7 +796,7 @@ public class TranslationVisitor implements Visitor {
 	@Override
 	public Object visit(Length length) {
 		String trans = (String) length.getArray().accept(this);
-		trans += "ArrayLength R" + targetReg + " R" + targetReg + "\n";
+		trans += "ArrayLength R" + targetReg + ",R" + targetReg + "\n";
 		return trans;
 	}
 
